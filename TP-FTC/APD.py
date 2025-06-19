@@ -1,63 +1,7 @@
-# Pilha para armazenar as reações
+# APD.py - Versão refatorada para receber dados como parâmetros
+
+# Pilha para armazenar as reações (variável global do módulo)
 pilha_reacoes = []
-
-# 1 - criar o alfabeto
-''' Ingredientes
-  a - água
-  p - pétalas
-  o - óleo
-  d - dente de dragão
-  c - costela de adão
-  s - sapo
-'''
-
-alfabeto = {'a', 'p', 'o', 'd', 'c', 's', 'e'}
-
-ingrediente = {
-  'a': {
-    'nome': 'Agua',
-    'simbolo': 'a',
-    'reacao': 'dilui',
-    'neutraliza': ['engrossa']
-  },
-  'p': {
-    'nome': 'Petalas',
-    'simbolo': 'p',
-    'reacao': 'perfuma',
-    'neutraliza': ['fedido']
-  },
-  'o': {
-    'nome': 'Oleo',
-    'simbolo': 'o',
-    'reacao': 'engrossa',
-    'neutraliza': ['dilui']
-  },
-  'd': {
-    'nome': 'Dente de Dragao',
-    'simbolo': 'd',
-    'reacao': 'acido',
-    'neutraliza': ['alcalino']
-  },
-  'c': {
-    'nome': 'Costela de Adao',
-    'simbolo': 'c',
-    'reacao': 'alcalino',
-    'neutraliza': ['acido']
-  },
-  's': {
-    'nome': 'Sapo',
-    'simbolo': 's',
-    'reacao': 'fedido',
-    'neutraliza': ['perfuma']
-  },
-  'e': {
-    'nome': 'Erro',
-    'simbolo': 'e',
-    'reacao': 'erro',
-    'neutraliza': []
-  }
-}
-
 
 def ler_automato_pilha(entrada_texto):
     """
@@ -139,15 +83,18 @@ def mostrar_pilha():
     else:
         print(f"🧪 Reações ativas na poção: {' -> '.join(pilha_reacoes[::-1])} (topo)")
 
-def processar_pilha(simbolo, simbolo_desempilhar, simbolo_empilhar):
+def processar_pilha(simbolo, simbolo_desempilhar, simbolo_empilhar, ingredientes):
+    """
+    Processa operações na pilha - agora recebe ingredientes como parâmetro
+    """
     global pilha_reacoes
     
-    if simbolo not in ingrediente:
+    if simbolo not in ingredientes:
         return False
     
-    reacao_atual = ingrediente[simbolo]['reacao']
+    reacao_atual = ingredientes[simbolo]['reacao']
     
-    print(f"\n➕ Adicionando {ingrediente[simbolo]['nome']}...")
+    print(f"\n➕ Adicionando {ingredientes[simbolo]['nome']}...")
     print(f"   Propriedade/Reação: {reacao_atual}")
     
     # Verificar se pode desempilhar
@@ -213,7 +160,11 @@ def realizar_transicao_apd(estado_atual, simbolo, dicionario):
     
     return None, None, None
 
-def main():
+def executar_simulador_pilha(alfabeto, ingredientes):
+    """
+    Função principal que agora recebe alfabeto e ingredientes como parâmetros
+    """
+    global pilha_reacoes
     
     print("=" * 60)
     print("🧙 SIMULADOR DE POÇÕES - AUTÔMATO DE PILHA 🧙")
@@ -222,16 +173,16 @@ def main():
     
     # Entrada do autômato (como fornecida)
     entrada_automato = """Q: I Q1 Q2 Q3 F erro
-I: I
-F: F
-I -> Q1 | a, Z0, D
-Q1 -> Q1 | a, ε, D
-Q1 -> Q2 | p, ε, P
-Q2 -> Q2 | p, ε, P
-Q2 -> Q3 | s, P, ε
-Q3 -> F | o, D, ε
-F -> F | o, D, ε"""
-    
+    I: I
+    F: F
+    I -> Q1 | a, Z0, D
+    Q1 -> Q1 | a, ε, D
+    Q1 -> Q2 | p, ε, P
+    Q2 -> Q2 | p, ε, P
+    Q2 -> Q3 | s, P, ε
+    Q3 -> F | o, D, ε
+    F -> F | o, D, ε"""
+        
     estado_inicial, estados_finais, dicionario_transicoes = ler_automato_pilha(entrada_automato)
     
     if estado_inicial is None:
@@ -240,12 +191,12 @@ F -> F | o, D, ε"""
     
     imprime_dicionario_apd(dicionario_transicoes)
     
-    ingredientes = []
+    ingredientes_usados = []
     estado_atual = estado_inicial
     pilha_reacoes = []  # Reset da pilha
     
     print(f"\n📋 Ingredientes disponíveis:")
-    for simbolo, info in ingrediente.items():
+    for simbolo, info in ingredientes.items():
         if simbolo != 'e':
             print(f"   {simbolo} - {info['nome']} (causa: {info['reacao']}, neutraliza: {info['neutraliza']})")
     
@@ -264,10 +215,10 @@ F -> F | o, D, ε"""
             break
             
         if ingrediente_simbolo not in alfabeto:
-            print("❌ Ingrediente inválido!")
+            print(f"❌ Ingrediente '{ingrediente_simbolo}' não está no alfabeto válido!")
             continue
         
-        ingredientes.append(ingrediente_simbolo)
+        ingredientes_usados.append(ingrediente_simbolo)
         novo_estado, simbolo_desempilhar, simbolo_empilhar = realizar_transicao_apd(estado_atual, ingrediente_simbolo, dicionario_transicoes)
         
         if novo_estado is None:
@@ -281,7 +232,7 @@ F -> F | o, D, ε"""
             break
         
         # Processar ação na pilha
-        if not processar_pilha(ingrediente_simbolo, simbolo_desempilhar, simbolo_empilhar):
+        if not processar_pilha(ingrediente_simbolo, simbolo_desempilhar, simbolo_empilhar, ingredientes):
             print("💥 ERRO: Falha ao processar pilha!")
             break
         
@@ -297,7 +248,7 @@ F -> F | o, D, ε"""
     print("🏁 RESULTADO FINAL")
     print("=" * 60)
     
-    print(f"📝 Ingredientes utilizados: {' -> '.join(ingredientes)}")
+    print(f"📝 Ingredientes utilizados: {' -> '.join(ingredientes_usados)}")
     print(f"📍 Estado final: {estado_atual}")
     
     if estado_atual in estados_finais:
@@ -312,6 +263,3 @@ F -> F | o, D, ε"""
     mostrar_pilha()
     
     print("\n" + "=" * 60)
-
-if __name__ == "__main__":
-    main()
