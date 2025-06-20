@@ -1,6 +1,7 @@
 # main.py - Versão com dados centralizados
 from APD import executar_simulador_pilha
 from AFD import executar_simulador_arquivo
+from Turing import executar_maquina_turing
 
 # ==================== DADOS CENTRALIZADOS ====================
 # alfabeto único para todo o sistema
@@ -53,21 +54,91 @@ ingredientes = {
 }
 
 def main():
-    print("🧙 Bem-vindo ao Simulador de Poções!")
-    print("Escolha o tipo de autômato que deseja executar:")
-    print("1 - Autômato de Pilha (APD)")
-    print("2 - Autômato simples (sem pilha, lido de arquivo)")
+    print(
+        '   ° o   \n'
+        ' _ o_° o \n'
+        ' /  \\  ° \n'
+        ' \\__/    ' "Bem-vindo ao Simulador de Poções! \n")
     
-    escolha = input("Digite 1 ou 2: ").strip()
+    print("╔══════════════════════════════╗")
+    print("║   MENU OPÇÕES DE AUTOMATO:   ║")
+    print("╠══════════════════════════════╣")
+    print("║ 1) Autômato AFD              ║")
+    print("║ 2) Autômato de Pilha (APD)   ║")
+    print("║ 3) Máquina de Moore          ║")
+    print("║ 4) Máquina de Mealy          ║")
+    print("║ 5) Máquina de Turing         ║")
+    print("╠══════════════════════════════╣")
+    print("║ 6) Sair                      ║")
+    print("╚══════════════════════════════╝")
+
+
+    escolha = input("Digite sua escolha: ").strip()
     
     if escolha == '1':
-        # Passa os dados como parâmetros
-        executar_simulador_pilha(alfabeto, ingredientes)
-    elif escolha == '2':
-        # Passa os dados como parâmetros
+        print("╔══════════════════════════════╗")
+        print("║   Automato AFD Selecionado   ║")
+        print("╚══════════════════════════════╝")
         executar_simulador_arquivo(alfabeto, ingredientes)
+    elif escolha == '2':
+        print("╔══════════════════════════════╗")
+        print("║   Automato APD Selecionado   ║")
+        print("╚══════════════════════════════╝")
+        executar_simulador_pilha(alfabeto, ingredientes)
+    elif escolha == '3':
+        print("Máquina de Moore ainda não implementada.")
+    elif escolha == '4':
+        print("Máquina de Mealy ainda não implementada.") 
+    elif escolha == '5':   
+        print("╔══════════════════════════════╗")
+        print("║     Maquina de Turing        ║")
+        print("╚══════════════════════════════╝")
+        executar_maquina_turing()
+    elif escolha == '6':
+        print("Saindo do simulador...\n")
+        print( ' ° o \n'
+              '_ o_° o \n'
+              '//  \\  ° \n'
+             '//____\\  \n' )
+        return
     else:
-        print("❌ Escolha inválida!")
+        print("Escolha inválida!")
+        main()  # Chama novamente o menu para nova escolha
+        '''
+    print("                                                                    ::##                ")
+    print("                                                                    mm::                ")
+    print("                                                ::::::##                                ")
+    print("                                            ++:::::::::                    ::           ")
+    print("                                            ::::::::::::                                 ")
+    print("                                            ++mm:::::: :  O          ::##              ")
+    print("                                                ::mmmm##   O         mm::::::)          ")
+    print("                                        ####                      mm::::::)             ")
+    print("                                        ####            mm::##    ::mm::##             ")
+    print("                                                        ++::MM                          ")
+    print("                                                            ##                           ")
+    print("                                ===================================================      ")
+    print("                            ####################++::##########mm::  ::##############MM")
+    print("                            ##########::        ##mm       :##:              :##@@##@@")
+    print("                            ##############################################MMMMMMMM####MM")
+    print("                            ##########################################################  ")
+    print("                                (#                                                  #) ")
+    print("                               (#		        OPÇÕES DE AUTOMATO:         		#) ")
+    print("                              (#______________________________________________________#) ")
+    print("                              (#							                             #) ")
+    print("                              (#	  1) Autômato AFD  			                         #) ")
+    print("                              (#	    2) Autômato de Pilha (APD)			             #) ")
+    print("                               (#	  3) Máquina de Moore 				            #) ")
+    print("                                (#	   4) Máquina de Mealy 				           #) ")
+    print("                                 (#	    5) Máquina de Turing                      #) ")
+    print("                                  (#							                     #) ")
+    print("                                   (#____________________________________________#)  ")
+    print("                                    (#		6) Sair					           #) ")
+    print("                                      (#                  		              #) ")
+    print("                                        =======================================         ")
+    print("                                          ====  ######################  ====            ")
+    print("                                        ====         ##########          ====           ")
+    print("                                      ====               ##                ====         ")
+    '''
 
 if __name__ == "__main__":
     main()

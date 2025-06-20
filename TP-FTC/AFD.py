@@ -72,12 +72,20 @@ def ler_automato(nome_arquivo):
         return None, None, None
     
 def imprime_dicionario(dicionario_transicoes):
-    print("\n=== DICIONÁRIO DE TRANSIÇÕES ===")
-    for chave, valor in dicionario_transicoes.items():
-        print(f"{chave} -> {valor}")
+    print("\n╔══════════════════════════════════════════════╗")
+    print("║          DICIONÁRIO DE TRANSIÇÕES           ║")
+    print("╠══════════════════════════════════════════════╣")
+    print("║  Estado Atual  │  Símbolo  │ Próximo Estado  ║")
+    print("╠═════════════════╪═══════════╪════════════════╣")
+    
+    for chave, destino in dicionario_transicoes.items():
+        estado_atual, simbolo = chave
+        print(f"║ {estado_atual:^15} │ {simbolo:^9} │ {destino:^14} ║")
+    
+    print("╚═════════════════╧═══════════╧════════════════╝")
+
 
 def realizar_transicao(estado_atual, simbolo, dicionario):
-
     chave = (estado_atual, simbolo)
     if chave in dicionario:
         prox_estado = dicionario[chave]
@@ -93,33 +101,41 @@ def executar_simulador_arquivo(alfabeto, ingredientes):
     ingredientes = []
     estado_atual = estado_inicial
 
-    
     # Pergunta pelo primeiro ingrediente
-    print("Insira o símbolo do primeiro ingrediente da receita:")
-    primeiro_ingrediente = input().strip().lower()
+    imprime_dicionario(dicionario_transicoes)
+    primeiro_ingrediente = input("Insira o símbolo do primeiro ingrediente da receita: ").strip().lower()
+     #primeiro_ingrediente = input().strip().lower()
     ingredientes.append(primeiro_ingrediente)
     estado_atual = realizar_transicao(estado_inicial, primeiro_ingrediente, dicionario_transicoes)
     print(f"Estado atual após o primeiro ingrediente: {estado_atual}")
     # Loop para perguntar por mais ingredientes
     while True:
-        print("\nDeseja inserir mais um ingrediente(s/n)?")
-        resposta = input().strip().lower()
+        resposta = input("\nDeseja inserir mais um ingrediente (s/n)?").strip().lower()
+        #resposta = input().strip().lower()
         
         if resposta == 's':
-            print("Qual ingrediente será inserido:")
-            ingrediente = input().strip().lower()
+            ingrediente = input("Insira um ingrediente (a, p, o, d, c, s): ").strip().lower()
+            #ingrediente = input().strip().lower()
             ingredientes.append(ingrediente)
 
             estado_atual = realizar_transicao(estado_atual, ingrediente, dicionario_transicoes)
             print(f"Estado atual após o ingrediente '{ingrediente}': {estado_atual}")
+            if estado_atual in estados_finais:
+                print("Parabéns! Você alcançou um estado final.")
+                break
+            if estado_atual is 'erro':
+                print("Erro: Ingrediente inválido ou transição inexistente.")
+                break
         elif resposta == 'n':
+            print("Saindo da máquina")
+            print("Estado Atual", estado_atual)
             break
         else:
             print("Resposta inválida. Digite 's' para sim ou 'n' para não.")
     
     if estado_inicial is not None:
         print(f"Estado Inicial: {estado_inicial}")
-        print(f"Estados Finais: {estados_finais}")
-        imprime_dicionario(dicionario_transicoes)
+        #print(f"Estados Finais: {estados_finais}")
+        #imprime_dicionario(dicionario_transicoes)
     else:
         print("Não foi possível carregar o autômato.")
