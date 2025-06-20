@@ -73,7 +73,7 @@ def ler_automato(nome_arquivo):
     
 def imprime_dicionario(dicionario_transicoes):
     print("\n╔══════════════════════════════════════════════╗")
-    print("║          DICIONÁRIO DE TRANSIÇÕES           ║")
+    print("║          DICIONÁRIO DE TRANSIÇÕES            ║")
     print("╠══════════════════════════════════════════════╣")
     print("║  Estado Atual  │  Símbolo  │ Próximo Estado  ║")
     print("╠═════════════════╪═══════════╪════════════════╣")
@@ -83,6 +83,10 @@ def imprime_dicionario(dicionario_transicoes):
         print(f"║ {estado_atual:^15} │ {simbolo:^9} │ {destino:^14} ║")
     
     print("╚═════════════════╧═══════════╧════════════════╝")
+    print("╔══════════════════════════════════════════════╗")
+    print("║  Estado Inicial: I                           ║")
+    print("║  Estado Final: F                             ║")
+    print("╚══════════════════════════════════════════════╝")
 
 
 def realizar_transicao(estado_atual, simbolo, dicionario):
@@ -127,14 +131,14 @@ def executar_simulador_arquivo(alfabeto, ingredientes):
                 print("Erro: Ingrediente inválido ou transição inexistente.")
                 break
         elif resposta == 'n':
-            print("Saindo da máquina")
-            print("Estado Atual", estado_atual)
+            print("\nSaindo da máquina...")
             break
         else:
             print("Resposta inválida. Digite 's' para sim ou 'n' para não.")
     
     if estado_inicial is not None:
-        print(f"Estado Inicial: {estado_inicial}")
+        print("Estado Atual: ", estado_atual)
+        #print(f"Estado Inicial: {estado_inicial}")
         #print(f"Estados Finais: {estados_finais}")
         #imprime_dicionario(dicionario_transicoes)
     else:

@@ -98,8 +98,8 @@ def main():
         print("Saindo do simulador...\n")
         print( ' ° o \n'
               '_ o_° o \n'
-              '//  \\  ° \n'
-             '//____\\  \n' )
+              '/  \\  ° \n'
+        '/____\\  \n' )
         return
     else:
         print("Escolha inválida!")

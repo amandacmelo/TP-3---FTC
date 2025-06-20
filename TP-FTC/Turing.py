@@ -1,5 +1,6 @@
 # Alfabeto dos ingredientes
-alfabeto = ['a', 'p', 'o', 'd', 'c', 's', '_']  # '_' é espaço em branco na fita
+
+
 
 # Leitura do arquivo da máquina de Turing
 def ler_maquina_turing(nome_arquivo):
@@ -50,73 +51,97 @@ def ler_maquina_turing(nome_arquivo):
         print(f"Erro: {e}")
         return None, None, None
 
-
 def imprime_dicionario(dicionario_transicoes):
-    print("\n=== DICIONÁRIO DE TRANSIÇÕES ===")
-    for chave, valor in dicionario_transicoes.items():
-        print(f"{chave} -> {valor}")
-
+    print("\n╔══════════════════════════════════════════════════════════════════════════════╗")
+    print("║                          DICIONÁRIO DE TRANSIÇÕES                            ║")
+    print("╠═════════════════╦════════════╦═══════════════════════════════════════════════╣")
+    print("║  Estado Atual   │  Símbolo   │   (Próximo Estado, Ingrediente, Direção)      ║")
+    print("╠═════════════════╬════════════╬═══════════════════════════════════════════════╣")
+    
+    for chave, destino in dicionario_transicoes.items():
+        estado_atual, simbolo = chave
+        proximo_estado, simbolo_escrito, direcao = destino
+        print(f"║ {estado_atual:^15} │ {simbolo:^10} │ ({proximo_estado}, {simbolo_escrito}, {direcao}){' ' * (39 - len(str(proximo_estado + simbolo_escrito + direcao)))} ║")
+    
+    print("╚═════════════════╩════════════╩═══════════════════════════════════════════════╝")
+    print("╔══════════════════════════════════════════════════════════════════════════════╗")
+    print("║  Estado Inicial: I                                                           ║")
+    print("║  Estado Final: F                                                             ║")
+    print("╚══════════════════════════════════════════════════════════════════════════════╝")
 
 def executar_maquina_turing():
-    nome_arquivo = 'maquina_turing.txt'
-    estado_inicial, estados_finais, dicionario = ler_maquina_turing(nome_arquivo)
-
-    if estado_inicial is None:
-        print("Erro ao carregar a máquina de Turing.")
-        return
-
-    # Inicializa a fita com espaços em branco e entrada inicial
-    entrada = input("Digite os ingredientes (ex.: apdc): ").strip().lower()
-    fita = list(entrada) + ['_'] * 20  # Acrescenta espaços em branco à direita
-    cabecote = 0
+    estado_inicial, estados_finais, dicionario = ler_maquina_turing('maquina_turing.txt')
     estado_atual = estado_inicial
 
+    imprime_dicionario(dicionario)  # 🧠 Imprime o dicionário no início
+
+    fita = ['_'] * 50
+    cabecote = 0
+
     print(f"\nEstado Inicial: {estado_inicial}")
-    print(f"Estados Finais: {estados_finais}")
-    imprime_dicionario(dicionario)
 
-    # Execução
+    simbolo = input("Insira o símbolo do primeiro ingrediente da receita: ").strip().lower()
+    fita[cabecote] = simbolo
+
+    chave = (estado_atual, simbolo)
+
+    if chave in dicionario:
+        novo_estado, simbolo_escrito, direcao = dicionario[chave]
+        fita[cabecote] = simbolo_escrito
+        estado_atual = novo_estado
+        cabecote = move_cabecote(cabecote, direcao)
+    else:
+        estado_atual = 'erro'
+
+    print(f"Estado atual após o primeiro ingrediente: {estado_atual}")
+
     while True:
-        simbolo_lido = fita[cabecote] if 0 <= cabecote < len(fita) else '_'
+        resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
 
-        chave = (estado_atual, simbolo_lido)
+        if resposta != 's':
+            print("\nSaindo da máquina...")
+            print(f"Estado Atual: {estado_atual}")
+            print(f"Estado Inicial: {estado_inicial}")
+
+            print("\n=== RESULTADO FINAL ===")
+            print("Fita Final:", ' '.join(fita))
+            print("              " + "    " * cabecote + "^ (Cabeçote Final)")
+
+            intensidade = cabecote + 1
+            print(f"\n>> Intensidade da poção: {intensidade+1} 🔥 (Quanto mais à direita, mais intensa!)")
+            break
+
+        simbolo = input("Insira um ingrediente (a, p, o, d, c, s): ").strip().lower()
+        fita[cabecote] = simbolo
+
+        chave = (estado_atual, simbolo)
 
         if chave in dicionario:
             novo_estado, simbolo_escrito, direcao = dicionario[chave]
-            print(f"\nLendo '{simbolo_lido}' no estado '{estado_atual}' -> escreve '{simbolo_escrito}', vai para '{novo_estado}', move '{direcao}'")
-
-            # Escrever na fita
             fita[cabecote] = simbolo_escrito
-
-            # Atualizar estado
             estado_atual = novo_estado
-
-            # Mover cabeçote
-            if direcao.upper() == 'D':
-                cabecote += 1
-                if cabecote >= len(fita):
-                    fita.append('_')
-            elif direcao.upper() == 'E':
-                cabecote -= 1
-                if cabecote < 0:
-                    fita = ['_'] + fita
-                    cabecote = 0
-            else:
-                print("Direção inválida. Use 'D' (Direita) ou 'E' (Esquerda).")
-                break
-
-            # Mostrar estado da fita
-            print("Fita:", ' '.join(fita))
-            print("       " + "    " * cabecote + "^ (Cabeçote)")
-
+            cabecote = move_cabecote(cabecote, direcao)
         else:
-            print(f"\nSem transição definida para ({estado_atual}, {simbolo_lido}). Encerrando.")
-            break
+            estado_atual = 'erro'
+
+        print(f"Estado atual após o ingrediente '{simbolo}': {estado_atual}")
 
         if estado_atual in estados_finais:
-            print(f"\nEstado '{estado_atual}' é final. Máquina aceita a entrada!")
+            print("✅ Atingiu um estado final!")
+            intensidade = cabecote + 1
+            print(f"\n>> Intensidade da poção: {intensidade} 🔥 (Quanto mais à direita, mais intensa!)")
+            break
+
+        if estado_atual == 'erro':
+            print("❌ Erro: Ingrediente inválido ou transição inexistente.")
             break
 
 
-# Executa a máquina
-executar_maquina_turing()
+def move_cabecote(cabecote, direcao):
+    if direcao.upper() == 'D':
+        cabecote += 1
+    elif direcao.upper() == 'E':
+        cabecote -= 1
+        if cabecote < 0:
+            cabecote = 0  # Não deixa o cabeçote ir antes da posição 0
+    return cabecote
