@@ -1,0 +1,9 @@
+Q: q0 q1 q2 q3 qf
+I: q0
+q0 -> q1 | a/dilui p/perfuma o/engrossa
+q1 -> q2 | p/perfuma o/engrossa
+q1 -> q3 | a/dilui
+q2 -> q1 | o/engrossa
+q2 -> q3 | a/dilui
+q3 -> q2 | p/perfuma
+q3 -> q1 | o/engrossa

@@ -159,7 +159,7 @@ def executar_simulador_pilha(alfabeto, ingredientes):
     print("Baseado na entrada do autômato fornecida!\n")
     
     try:
-        with open("automato_pilha.txt", "r") as arquivo:
+        with open("Entradas/automato_pilha.txt", "r") as arquivo:
             entrada_automato = arquivo.read()
     except FileNotFoundError:
         print("❌ Erro: Arquivo 'automato_pilha.txt' não encontrado!")

@@ -100,7 +100,7 @@ def realizar_transicao(estado_atual, simbolo, dicionario):
 
 
 def executar_simulador_arquivo(alfabeto, ingredientes):
-    nome_arquivo = 'automato.txt'
+    nome_arquivo = 'Entradas/automato.txt'
     estado_inicial, estados_finais, dicionario_transicoes = ler_automato(nome_arquivo)
     ingredientes = []
     estado_atual = estado_inicial

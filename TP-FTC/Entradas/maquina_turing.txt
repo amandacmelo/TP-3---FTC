@@ -1,0 +1,6 @@
+Q: q0 q1 q2 qf
+I: q0
+F: qf
+q0 a -> q1 A D
+q1 p -> q2 D E
+q2 d -> qf D D

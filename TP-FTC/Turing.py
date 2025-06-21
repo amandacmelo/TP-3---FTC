@@ -70,7 +70,7 @@ def imprime_dicionario(dicionario_transicoes):
     print("╚══════════════════════════════════════════════════════════════════════════════╝")
 
 def executar_maquina_turing():
-    estado_inicial, estados_finais, dicionario = ler_maquina_turing('maquina_turing.txt')
+    estado_inicial, estados_finais, dicionario = ler_maquina_turing('Entradas/maquina_turing.txt')
     estado_atual = estado_inicial
 
     imprime_dicionario(dicionario)  # 🧠 Imprime o dicionário no início
