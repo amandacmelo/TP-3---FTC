@@ -88,10 +88,13 @@ def main():
     elif escolha == '3':
         print("Máquina de Moore ainda não implementada.")
     elif escolha == '4':
+        print("╔══════════════════════════════╗")
+        print("║ Maquina de Mealy Selecionada ║")
+        print("╚══════════════════════════════╝")
         executar_simulador_mealy(alfabeto, ingredientes)
     elif escolha == '5':   
         print("╔══════════════════════════════╗")
-        print("║     Maquina de Turing        ║")
+        print("║ Maquina de Turing Selecionada║")
         print("╚══════════════════════════════╝")
         executar_maquina_turing()
     elif escolha == '6':
@@ -142,3 +145,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+

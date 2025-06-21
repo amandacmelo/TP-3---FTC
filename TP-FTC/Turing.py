@@ -71,6 +71,9 @@ def imprime_dicionario(dicionario_transicoes):
 
 def executar_maquina_turing():
     estado_inicial, estados_finais, dicionario = ler_maquina_turing('Entradas/maquina_turing.txt')
+    if dicionario is None:
+        print("❌ Erro: Arquivo maquina_turing.txt não encontrado ou está mal formatado.")
+        return
     estado_atual = estado_inicial
 
     imprime_dicionario(dicionario)  # 🧠 Imprime o dicionário no início
@@ -78,42 +81,14 @@ def executar_maquina_turing():
     fita = ['_'] * 50
     cabecote = 0
 
-    print(f"\nEstado Inicial: {estado_inicial}")
-
-    simbolo = input("Insira o símbolo do primeiro ingrediente da receita: ").strip().lower()
-    fita[cabecote] = simbolo
-
-    chave = (estado_atual, simbolo)
-
-    if chave in dicionario:
-        novo_estado, simbolo_escrito, direcao = dicionario[chave]
-        fita[cabecote] = simbolo_escrito
-        estado_atual = novo_estado
-        cabecote = move_cabecote(cabecote, direcao)
-    else:
-        estado_atual = 'erro'
-
-    print(f"Estado atual após o primeiro ingrediente: {estado_atual}")
-
     while True:
-        resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
-
-        if resposta != 's':
-            print("\nSaindo da máquina...")
-            print(f"Estado Atual: {estado_atual}")
-            print(f"Estado Inicial: {estado_inicial}")
-
-            print("\n=== RESULTADO FINAL ===")
-            print("Fita Final:", ' '.join(fita))
-            print("              " + "    " * cabecote + "^ (Cabeçote Final)")
-
-            intensidade = cabecote + 1
-            print(f"\n>> Intensidade da poção: {intensidade+1} 🔥 (Quanto mais à direita, mais intensa!)")
-            break
-
         simbolo = input("Insira um ingrediente (a, p, o, d, c, s): ").strip().lower()
-        fita[cabecote] = simbolo
 
+        if simbolo not in ['a', 'p', 'o', 'd', 'c', 's']:
+            print(" Ingrediente inválido! Insira apenas (a, p, o, d, c, s).\n")
+            continue  # Volta pro início do loop pedindo novamente
+
+        fita[cabecote] = simbolo
         chave = (estado_atual, simbolo)
 
         if chave in dicionario:
@@ -121,20 +96,27 @@ def executar_maquina_turing():
             fita[cabecote] = simbolo_escrito
             estado_atual = novo_estado
             cabecote = move_cabecote(cabecote, direcao)
+            print(f"Estado atual após o ingrediente '{simbolo}': {estado_atual}")
         else:
-            estado_atual = 'erro'
-
-        print(f"Estado atual após o ingrediente '{simbolo}': {estado_atual}")
+            print("Erro: Transição inexistente para esse estado e símbolo.")
+            break
 
         if estado_atual in estados_finais:
-            print("✅ Atingiu um estado final!")
-            intensidade = cabecote + 1
-            print(f"\n>> Intensidade da poção: {intensidade} 🔥 (Quanto mais à direita, mais intensa!)")
+            print("\n✅Atingiu um estado final!")
             break
 
-        if estado_atual == 'erro':
-            print("❌ Erro: Ingrediente inválido ou transição inexistente.")
+        resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
+        if resposta != 's':
             break
+
+    print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
+    print("║ RESULTADO FINAL                                                                      ║")                          
+    intensidade = cabecote + 1
+    print(f"║ >> Intensidade da poção: {intensidade} 🔥 (Quanto mais à direita, mais intensa!)                 ║")
+    print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
+
+    print("Fita Final: ", ' '.join(fita),'\n')
+    #print("              " + "    " * cabecote + "^ (Cabeçote Final)                             ")  
 
 
 def move_cabecote(cabecote, direcao):

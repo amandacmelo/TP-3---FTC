@@ -102,44 +102,45 @@ def realizar_transicao(estado_atual, simbolo, dicionario):
 def executar_simulador_arquivo(alfabeto, ingredientes):
     nome_arquivo = 'Entradas/automato.txt'
     estado_inicial, estados_finais, dicionario_transicoes = ler_automato(nome_arquivo)
+
+    if estado_inicial is None:
+        print("Não foi possível carregar o autômato.")
+        return
+
     ingredientes = []
     estado_atual = estado_inicial
 
-    # Pergunta pelo primeiro ingrediente
     imprime_dicionario(dicionario_transicoes)
-    primeiro_ingrediente = input("Insira o símbolo do primeiro ingrediente da receita: ").strip().lower()
-     #primeiro_ingrediente = input().strip().lower()
-    ingredientes.append(primeiro_ingrediente)
-    estado_atual = realizar_transicao(estado_inicial, primeiro_ingrediente, dicionario_transicoes)
-    print(f"Estado atual após o primeiro ingrediente: {estado_atual}")
-    # Loop para perguntar por mais ingredientes
-    while True:
-        resposta = input("\nDeseja inserir mais um ingrediente (s/n)?").strip().lower()
-        #resposta = input().strip().lower()
-        
-        if resposta == 's':
-            ingrediente = input("Insira um ingrediente (a, p, o, d, c, s): ").strip().lower()
-            #ingrediente = input().strip().lower()
-            ingredientes.append(ingrediente)
+    #print(f"Estado inicial: {estado_inicial}")
 
-            estado_atual = realizar_transicao(estado_atual, ingrediente, dicionario_transicoes)
-            print(f"Estado atual após o ingrediente '{ingrediente}': {estado_atual}")
-            if estado_atual in estados_finais:
-                print("Parabéns! Você alcançou um estado final.")
-                break
-            if estado_atual is 'erro':
-                print("Erro: Ingrediente inválido ou transição inexistente.")
-                break
-        elif resposta == 'n':
-            print("\nSaindo da máquina...")
+    while True:
+        ingrediente = input("\nInsira um ingrediente (a, p, o, d, c, s): ").strip().lower()
+
+        # Verifica se o ingrediente é válido (pertence ao alfabeto)
+        if ingrediente not in alfabeto:
+            print(f"Ingrediente '{ingrediente}' inválido! Ingredientes válidos: {', '.join(alfabeto)}")
+            continue
+
+        ingredientes.append(ingrediente)
+
+        estado_atual = realizar_transicao(estado_atual, ingrediente, dicionario_transicoes)
+        print(f"Estado atual após o ingrediente '{ingrediente}': {estado_atual}")
+
+        if estado_atual == 'erro':
+            print("Erro: Transição inexistente para esse ingrediente nesse estado.")
             break
-        else:
-            print("Resposta inválida. Digite 's' para sim ou 'n' para não.")
-    
-    if estado_inicial is not None:
-        print("Estado Atual: ", estado_atual)
-        #print(f"Estado Inicial: {estado_inicial}")
-        #print(f"Estados Finais: {estados_finais}")
-        #imprime_dicionario(dicionario_transicoes)
-    else:
-        print("Não foi possível carregar o autômato.")
+
+        if estado_atual in estados_finais:
+            print("Parabéns! Você alcançou um estado final!")
+            break
+
+        resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
+        if resposta != 's':
+            print("\nEncerrando a simulação...")
+            break
+
+    print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
+    print(" RESULTADO FINAL                                                                      ")                          
+    print(f"Ingredientes inseridos: {ingredientes}                                               ")
+    print(f"Estado final da execução: {estado_atual}                                                             ")                              
+    print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
