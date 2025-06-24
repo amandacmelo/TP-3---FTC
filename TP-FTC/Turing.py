@@ -80,13 +80,14 @@ def executar_maquina_turing():
 
     fita = ['_'] * 50
     cabecote = 0
+    estado_invalido = False  # Indicador de erro
 
     while True:
         simbolo = input("Insira um ingrediente (a, p, o, d, c, s): ").strip().lower()
 
         if simbolo not in ['a', 'p', 'o', 'd', 'c', 's']:
             print(" Ingrediente inválido! Insira apenas (a, p, o, d, c, s).\n")
-            continue  # Volta pro início do loop pedindo novamente
+            continue
 
         fita[cabecote] = simbolo
         chave = (estado_atual, simbolo)
@@ -98,11 +99,11 @@ def executar_maquina_turing():
             cabecote = move_cabecote(cabecote, direcao)
             print(f"Estado atual após o ingrediente '{simbolo}': {estado_atual}")
         else:
-            print("Erro: Transição inexistente para esse estado e símbolo.")
-            break
+            print(f"⚠️ Atenção: Transição inexistente para ({estado_atual}, '{simbolo}'). Cabeçote permanece.")
+            estado_invalido = True  # Marca que houve transição inválida
 
         if estado_atual in estados_finais:
-            print("\n✅Atingiu um estado final!")
+            print("\n✅ Atingiu um estado final!")
             break
 
         resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
@@ -110,13 +111,18 @@ def executar_maquina_turing():
             break
 
     print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
-    print("║ RESULTADO FINAL                                                                      ║")                          
-    intensidade = cabecote + 1
-    print(f"║ >> Intensidade da poção: {intensidade} 🔥 (Quanto mais à direita, mais intensa!)                 ║")
+    print("║ RESULTADO FINAL                                                                      ║")
     print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
-
-    print("Fita Final: ", ' '.join(fita),'\n')
-    #print("              " + "    " * cabecote + "^ (Cabeçote Final)                             ")  
+    intensidade = cabecote + 1
+    print(f" -> Intensidade da poção: {intensidade} 🔥 (Quanto mais à direita, mais intensa!)     ")
+    print(f" -> Estado final da execução: {estado_atual}                                          ")
+    if estado_invalido:
+        print("  Atenção: Houve pelo menos uma transição inválida durante a execução.              ")
+    elif estado_atual not in estados_finais:
+        print("  Atenção: A execução terminou sem atingir um estado final.                         ")
+    print("\n Fita Final: ", ' '.join(fita), '\n')
+    # print("              " + "    " * cabecote + "^ (Cabeçote Final)")
+    print("════════════════════════════════════════════════════════════════════════════════════════")
 
 
 def move_cabecote(cabecote, direcao):

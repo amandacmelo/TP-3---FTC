@@ -109,29 +109,26 @@ def executar_simulador_arquivo(alfabeto, ingredientes):
 
     ingredientes = []
     estado_atual = estado_inicial
+    atingiu_estado_final = False
 
     imprime_dicionario(dicionario_transicoes)
-    #print(f"Estado inicial: {estado_inicial}")
 
     while True:
         ingrediente = input("\nInsira um ingrediente (a, p, o, d, c, s): ").strip().lower()
 
-        # Verifica se o ingrediente é válido (pertence ao alfabeto)
         if ingrediente not in alfabeto:
             print(f"Ingrediente '{ingrediente}' inválido! Ingredientes válidos: {', '.join(alfabeto)}")
             continue
 
         ingredientes.append(ingrediente)
 
-        estado_atual = realizar_transicao(estado_atual, ingrediente, dicionario_transicoes)
-        print(f"Estado atual após o ingrediente '{ingrediente}': {estado_atual}")
-
-        if estado_atual == 'erro':
-            print("Erro: Transição inexistente para esse ingrediente nesse estado.")
-            break
+        novo_estado = realizar_transicao(estado_atual, ingrediente, dicionario_transicoes)
+        print(f"Estado atual após o ingrediente '{ingrediente}': {novo_estado}")
+        estado_atual = novo_estado
 
         if estado_atual in estados_finais:
             print("Parabéns! Você alcançou um estado final!")
+            atingiu_estado_final = True
             break
 
         resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
@@ -140,7 +137,13 @@ def executar_simulador_arquivo(alfabeto, ingredientes):
             break
 
     print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
-    print(" RESULTADO FINAL                                                                      ")                          
-    print(f"Ingredientes inseridos: {ingredientes}                                               ")
-    print(f"Estado final da execução: {estado_atual}                                                             ")                              
+    print("║ RESULTADO FINAL                                                                       ║")
     print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
+    print("════════════════════════════════════════════════════════════════════════════════════════")
+    print(f" Ingredientes inseridos: {ingredientes}")
+    print(f" Estado final da execução: {estado_atual}")
+    if estado_atual == 'erro':
+        print(" Atenção: O autômato entrou em um estado de erro (transição inválida).")
+    elif not atingiu_estado_final:
+        print(" Atenção: A execução terminou sem atingir um estado final. :( ")
+    print("════════════════════════════════════════════════════════════════════════════════════════")
