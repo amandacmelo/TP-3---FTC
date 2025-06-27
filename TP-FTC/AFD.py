@@ -137,7 +137,7 @@ def executar_simulador_arquivo(alfabeto, ingredientes):
             break
 
     print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
-    print("║ RESULTADO FINAL                                                                       ║")
+    print("║ RESULTADO FINAL                                                                      ║")
     print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
     print("════════════════════════════════════════════════════════════════════════════════════════")
     print(f" Ingredientes inseridos: {ingredientes}")

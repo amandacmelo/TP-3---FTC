@@ -72,11 +72,11 @@ def imprime_dicionario(dicionario_transicoes):
 def executar_maquina_turing():
     estado_inicial, estados_finais, dicionario = ler_maquina_turing('Entradas/maquina_turing.txt')
     if dicionario is None:
-        print("❌ Erro: Arquivo maquina_turing.txt não encontrado ou está mal formatado.")
+        print(" Erro: Arquivo maquina_turing.txt não encontrado ou está mal formatado.")
         return
     estado_atual = estado_inicial
 
-    imprime_dicionario(dicionario)  # 🧠 Imprime o dicionário no início
+    imprime_dicionario(dicionario)  #  Imprime o dicionário no início
 
     fita = ['_'] * 50
     cabecote = 0
@@ -88,9 +88,10 @@ def executar_maquina_turing():
         if simbolo not in ['a', 'p', 'o', 'd', 'c', 's']:
             print(" Ingrediente inválido! Insira apenas (a, p, o, d, c, s).\n")
             continue
-
-        fita[cabecote] = simbolo
-        chave = (estado_atual, simbolo)
+        
+        if simbolo in ['a', 'p', 'o', 'd', 'c', 's']:
+            fita[cabecote] = simbolo
+            chave = (estado_atual, simbolo)
 
         if chave in dicionario:
             novo_estado, simbolo_escrito, direcao = dicionario[chave]
