@@ -4,6 +4,8 @@ from APD import executar_simulador_pilha
 from AFD import executar_simulador_arquivo
 from Turing import executar_maquina_turing
 from Mealy import executar_simulador_mealy
+from Moore import executar_simulador_moore
+
 # ==================== DADOS CENTRALIZADOS ====================
 # alfabeto único para todo o sistema
 alfabeto = {'a', 'p', 'o', 'd', 'c', 's', 'e'}
@@ -91,7 +93,7 @@ def main():
             print("╔══════════════════════════════╗")
             print("║ Maquina de Moore Selecionada ║")
             print("╚══════════════════════════════╝")
-            print("Máquina de Moore ainda não implementada.")
+            executar_simulador_moore(alfabeto, ingredientes)
         elif escolha == '4':
             print("╔══════════════════════════════╗")
             print("║ Maquina de Mealy Selecionada ║")
