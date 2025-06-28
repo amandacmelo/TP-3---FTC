@@ -1,3 +1,10 @@
+import os
+import time
+
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
 def ler_automato_mealy(linhas):
     """
     Lê um autômato Mealy de um arquivo no formato:
@@ -45,24 +52,60 @@ def ler_automato_mealy(linhas):
     
     return estado_inicial, dicionario_transicoes
 
+def classificar_pocao_final(lista_saidas):
+    
+    #Analisa a lista de saídas (reacoes) e determina a descricao da pocao final com base na reação predominante
+    
+    if not lista_saidas:
+       
+        return "Vazio :()"
 
-def imprime_dicionario_mealy(dicionario_transicoes):
+    # Contar a ocorrência de cada reação
+    contagem_reacoes = {}
+    for reacao in lista_saidas:
+        if reacao not in contagem_reacoes:
+            contagem_reacoes[reacao] = 0
+        contagem_reacoes[reacao] += 1
+
+    # Encontrar a reação mais frequente
+    reacao_predominante = max(contagem_reacoes, key=contagem_reacoes.get)
+
+    # Mapear reação para descrição da poção
+    descricao_pocao = {
+        'dilui': 'Poção aguada',
+        'perfuma': 'Poção perfumada',
+        'engrossa': 'Poção espessa',
+        'acido': 'Poção ácida',
+        'alcalino': 'Poção alcalina',
+        'fedido': 'Poção fedida',
+        'erro': 'Poção explodiu'
+    }
+
+    return descricao_pocao[reacao_predominante]
+
+
+def imprime_dicionario_mealy(dicionario_transicoes, estado_inicial):
     """Imprime o dicionário de transições Mealy de forma organizada"""
-    print("\n╔══════════════════════════════════════════════════════════════╗")
-    print("║                  DICIONÁRIO DE TRANSIÇÕES MEALY              ║")
-    print("╠══════════════════════════════════════════════════════════════╣")
-    print("║  Estado Atual  │  Entrada  │ Próximo Estado │     Saída      ║")
-    print("╠════════════════╪═══════════╪════════════════╪════════════════╣")
+    linhas = []
+    linhas.append("╔════════════════╦═══════════╦════════════════╦════════════════╗")
+    linhas.append("║  Estado Atual  ║  Entrada  ║ Próximo Estado ║     Saída      ║")
+    linhas.append("╠════════════════╬═══════════╬════════════════╬════════════════╣")
     
     for chave, (destino, saida) in dicionario_transicoes.items():
         estado_atual, entrada = chave
-        print(f"║ {estado_atual:^14} │ {entrada:^9} │ {destino:^14} │ {saida:^14} ║")
+        linhas.append(f"║ {estado_atual:^14} ║ {entrada:^9} ║ {destino:^14} ║ {saida:^14} ║")
+        linhas.append("╠════════════════╬═══════════╬════════════════╬════════════════╣")
     
-    print("╚════════════════╧═══════════╧════════════════╧════════════════╝")
-
+    # Remove a última linha de separação e adiciona o fechamento
+    linhas[-1] = "╚════════════════╩═══════════╩════════════════╩════════════════╝"
+    
+    # Imprime todas as linhas da tabela
+    for linha in linhas:
+        print(linha)
+    
+    # Informações adicionais
     print("╔══════════════════════════════════════════════════════════════╗")
-    print("║ Estado Inicial: I                                            ║")
-    print("║ Estado Final: F                                              ║")
+    print(f"║ Estado Inicial: {estado_inicial:<45}║")
     print("╚══════════════════════════════════════════════════════════════╝")
 
 def realizar_transicao_mealy(estado_atual, entrada, dicionario):
@@ -76,17 +119,6 @@ def realizar_transicao_mealy(estado_atual, entrada, dicionario):
     else:
         return None, None
 
-def obter_nome_ingrediente(simbolo, ingredientes):
-    """Retorna o nome completo do ingrediente pelo símbolo"""
-    if simbolo in ingredientes:
-        return ingredientes[simbolo]['nome']
-    return "Desconhecido"
-
-def obter_reacao_ingrediente(simbolo, ingredientes):
-    """Retorna a reação do ingrediente pelo símbolo"""
-    if simbolo in ingredientes:
-        return ingredientes[simbolo]['reacao']
-    return "sem reação"
 
 def executar_simulador_mealy(alfabeto, ingredientes, conteudo_arquivo):
     """Executa o simulador do autômato Mealy"""
@@ -96,92 +128,82 @@ def executar_simulador_mealy(alfabeto, ingredientes, conteudo_arquivo):
         print("Não foi possível carregar o autômato.")
         return
     
-    
     # Mostra o dicionário de transições
-    imprime_dicionario_mealy(dicionario_transicoes)
-    
-    print("\n INGREDIENTES DISPONÍVEIS:")
-    print("╔══════════════════════════════════════════════════════════╗")
-    for simbolo, info in ingredientes.items():
-        print(f"║ {simbolo} - {info['nome']:<20} (Efeito: {info['reacao']:<10})            ║")
-    print("╚══════════════════════════════════════════════════════════╝")
-    
+    imprime_dicionario_mealy(dicionario_transicoes, estado_inicial)
+
     lista_ingredientes = []
     lista_saidas = []
     estado_atual = estado_inicial
+    historico_transicoes = []
     
-    print(f"\nEstado inicial: {estado_inicial}")
-    
-    # Pergunta pelo primeiro ingrediente
-    primeiro_ingrediente = input("\nInsira o símbolo do primeiro ingrediente da receita: ").strip().lower()
-    
-    if primeiro_ingrediente not in alfabeto:
-        print("Ingrediente inválido!")
-        return
-    
-    lista_ingredientes.append(primeiro_ingrediente)
-    proximo_estado, saida = realizar_transicao_mealy(estado_inicial, primeiro_ingrediente, dicionario_transicoes)
-    
-    if proximo_estado is None:
-        print("Transição inválida!")
-        return
-    
-    estado_atual = proximo_estado
-    lista_saidas.append(saida)
-    
-    nome_ingrediente = obter_nome_ingrediente(primeiro_ingrediente, ingredientes)
-    print(f"\n Adicionado: {nome_ingrediente} ({primeiro_ingrediente})")
-    print(f"   -> Efeito: {saida}")
-    print(f"   -> Estado atual: {estado_atual}")
     
     # Loop para perguntar por mais ingredientes
     while True:
-        if estado_atual == 'erro' or estado_atual is None:
-            print("\nERRO: A receita falhou!")
-            print("Combinação de ingredientes resultou em erro.")
-            break
+        limpar_tela()
+        imprime_dicionario_mealy(dicionario_transicoes, estado_inicial)
+        if historico_transicoes != []:
+            print("\n╔════════════════════════════════════════════════════════════╗")
+            print("║                   📜 HISTÓRICO DE TRANSIÇÕES               ║")
+            print("╠════════════╦════════════╦════════════════╦═════════════════╣")
+            print("║  Origem    ║  Entrada   ║   Destino      ║      Saída      ║")
+            print("╠════════════╬════════════╬════════════════╬═════════════════╣")
+            for origem, simb, destino, saida in historico_transicoes:
+                nome_ingrediente = ingredientes[simb]['nome']
+                print(f"║ {origem:^10} ║ {simb:^10} ║ {destino:^14} ║ {saida:^15} ║")
+            print("╚════════════╩════════════╩════════════════╩═════════════════╝")
+
+        ingrediente = input("\nInsira um ingrediente (a, p, o, d, c, s): ").strip().lower()
+        if ingrediente not in alfabeto:
+            print(f"Ingrediente '{ingrediente}' inválido! Ingredientes válidos: {', '.join(alfabeto)}")
+            time.sleep(1)
+            continue
         
+        lista_ingredientes.append(ingrediente)
+        proximo_estado, saida = realizar_transicao_mealy(estado_atual, ingrediente, dicionario_transicoes)
+
+        # Estados de erro ficaram implicitos nessa maquina
+        if proximo_estado is None:
+            proximo_estado = 'erro'
+            saida = "Explosao"
+
+        historico_transicoes.append((estado_atual, ingrediente, proximo_estado, saida))
+        estado_atual = proximo_estado
+        lista_saidas.append(saida)
+        
+        print("\n╔════════════════════════════════════════════════════════════╗")
+        print("║                   📜 HISTÓRICO DE TRANSIÇÕES               ║")
+        print("╠════════════╦════════════╦════════════════╦═════════════════╣")
+        print("║  Origem    ║  Entrada   ║   Destino      ║      Saída      ║")
+        print("╠════════════╬════════════╬════════════════╬═════════════════╣")
+        for origem, simb, destino, saida in historico_transicoes:
+            nome_ingrediente = ingredientes[simb]['nome']
+            print(f"║ {origem:^10} ║ {simb:^10} ║ {destino:^14} ║ {saida:^15} ║")
+        print("╚════════════╩════════════╩════════════════╩═════════════════╝")
+
+            
         resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
-        
-        if resposta == 's':
-            # Lista os ingredientes disponíveis baseado no alfabeto
-            ingredientes_str = ', '.join(sorted(alfabeto))
-            ingrediente = input(f"Insira um ingrediente ({ingredientes_str}): ").strip().lower()
-            
-            if ingrediente not in alfabeto:
-                print("Ingrediente inválido!")
-                continue
-            
-            lista_ingredientes.append(ingrediente)
-            proximo_estado, saida = realizar_transicao_mealy(estado_atual, ingrediente, dicionario_transicoes)
-            
-            if proximo_estado is None:
-                print("\nTransição inválida para este estado e ingrediente!")
-                print("Receita não pode continuar.")
-                break
-            
-            estado_atual = proximo_estado
-            lista_saidas.append(saida)
-            
-            nome_ingrediente = obter_nome_ingrediente(ingrediente, ingredientes)
-            print(f"\n Adicionado: {nome_ingrediente} ({ingrediente})")
-            print(f"  -> Efeito: {saida}")
-            print(f"  -> Estado atual: {estado_atual}")
-            
-        elif resposta == 'n':
-            print("\nFinalizando receita... :)")
-            print("Receita mágica concluída!")
+        while resposta not in ('s', 'n'):
+            print("Opção inválida! Tente novamente.")
+            resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
+        if resposta != 's':
             break
-        else:
-            print("Resposta inválida. Digite 's' para sim ou 'n' para não.")
-    
-    # Resumo final
+    # Resumo final 
     print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
-    print("║  RESUMO DA RECEITA                                                                   ║")
+    print("║                                 🌟 RESULTADO FINAL 🌟                                ║")
+    print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
+    print(f"║ Estado inicial da execução: {estado_inicial:<57}║")
+    print(f"║ Estado final da execução:   {estado_atual:<57}║")
+    print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
+    
+
+    print(f"║ Saida:  {classificar_pocao_final(lista_saidas):<77}║")
+
+    # Análise do resultado
+    print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
+    if estado_atual == 'erro':
+        print("║ Resultado:   O autômato entrou em um estado de erro (transição inválida)             ║")
+    else:
+        print("║ Resultado:   A execução terminou corretamente sem transições inválidas               ║")
+
     print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
-    print("════════════════════════════════════════════════════════════════════════════════════════")
-    print(f" Estado inicial: {estado_inicial}")
-    print(f" Estado final: {estado_atual}")
-    print(f" \n Ingredientes utilizados: {' -> '.join(lista_ingredientes) if lista_ingredientes else 'Nenhum'}")
-    print(f" Efeitos produzidos: {' -> '.join(lista_saidas) if lista_saidas else 'Nenhum'}")
-    print("════════════════════════════════════════════════════════════════════════════════════════")
+ 

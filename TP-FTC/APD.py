@@ -28,21 +28,25 @@ def ler_automato_pilha(linhas):
 
     i = 0
 
+    # Lista de estadados
     if i < len(linhas) and linhas[i].startswith('Q:'):
         estados_str = linhas[i][2:].strip()
         estados = set(estados_str.split())
         i += 1
 
+    # Estado Inicial
     if i < len(linhas) and linhas[i].startswith('I:'):
         estado_inicial = linhas[i][2:].strip()
         i += 1
 
+    # Estados Finais
     if i < len(linhas) and linhas[i].startswith('F:'):
         estados_finais_str = linhas[i][2:].strip()
         if estados_finais_str:
             estados_finais = set(estados_finais_str.split())
         i += 1
 
+    # Transiçoes
     while i < len(linhas):
         linha = linhas[i]
         if '->' in linha:
@@ -165,7 +169,7 @@ def realizar_transicao_apd(estado_atual, simbolo, dicionario):
             novo_estado, simbolo_empilhar = dicionario[chave_desempilha]
             return novo_estado, topo_pilha, simbolo_empilhar
     
-    # 2. Transição que não desempilha (epsilon) - funciona com pilha vazia ou não
+    # 2. Transição que não desempilha (epsilon) 
     chave_epsilon = (estado_atual, simbolo, '')
     if chave_epsilon in dicionario:
         novo_estado, simbolo_empilhar = dicionario[chave_epsilon]
@@ -226,6 +230,7 @@ def executar_simulador_pilha(alfabeto, ingredientes, conteudo):
             break
         ingredientes_usados.append(simbolo)
         estado_atual = novo_estado
+
         # Mostrar histórico de transições
         if simbolo_desempilhar == '':
             simbolo_desempilhar = 'λ'
