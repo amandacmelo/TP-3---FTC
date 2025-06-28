@@ -2,11 +2,11 @@ Q: I ing1 ing2 ing3 erro F
 I: I
 F: F
 I -> ing1 | a
-I -> erro | p o e m c
+I -> erro | p o e m c s
 ing1 -> ing2 | p
-ing1 -> erro | a o e m c
+ing1 -> erro | a o e m c s
 ing2 -> F | a
-ing2 -> erro | p o e m c
-F -> erro | a p o e m c
-erro -> erro | a p o e m c
+ing2 -> erro | p o e m c s
+F -> erro | a p o e m c s
+erro -> erro | a p o e m c s
 ---

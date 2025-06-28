@@ -1,4 +1,4 @@
-def ler_moore(entrada_texto):
+def ler_moore(linhas):
     """
     formato maquina moore
     Q: lista de estados
@@ -9,72 +9,65 @@ def ler_moore(entrada_texto):
     
     """
 
-    try:
-        linhas = entrada_texto.strip().split('\n')
-        linhas = [linha.strip() for linha in linhas if linha.strip()]
-        
-        estados = set()
-        estado_inicial = None
-        estados_finais = set()
-        saidas_estados = {}  # Dicionario: estado -> saida
-        dicionario_transicoes = {}
-        
-        i = 0
-        
-        # Q: lista de estados
-        if i < len(linhas) and linhas[i].startswith('Q:'):
-            estados_str = linhas[i][2:].strip()
-            estados = set(estados_str.split())
-            i += 1
-        
-        # I: estado inicial
-        if i < len(linhas) and linhas[i].startswith('I:'):
-            estado_inicial = linhas[i][2:].strip()
-            i += 1
-        
-        # F: estados finais
-        if i < len(linhas) and linhas[i].startswith('F:'):
-            estados_finais_str = linhas[i][2:].strip()
-            if estados_finais_str:
-                estados_finais = set(estados_finais_str.split())
-            i += 1
-        
-        # O: saidas dos estados
-        if i < len(linhas) and linhas[i].startswith('O:'):
-            saidas_str = linhas[i][2:].strip()
-           
-            saidas_items = saidas_str.split()
-            for item in saidas_items:
-                if '=' in item:
-                    estado, saida = item.split('=', 1)
-                    saidas_estados[estado.strip()] = saida.strip()
-            i += 1
-        
-        # transicoes
-        while i < len(linhas):
-            linha = linhas[i]
-            if '->' in linha:
-                # "estado_origem -> estado_destino | simbolos"
-                partes = linha.split('->')
-                estado_origem = partes[0].strip()
-                resto = partes[1].strip()
-                
-                if '|' in resto:
-                    estado_destino, simbolos_str = resto.split('|', 1)
-                    estado_destino = estado_destino.strip()
-                    simbolos = simbolos_str.strip().split()
-                    
-                    # adicionando a transicao no dicionario
-                    for simbolo in simbolos:
-                        chave = (estado_origem, simbolo)
-                        dicionario_transicoes[chave] = estado_destino
-            i += 1
-        
-        return estado_inicial, estados_finais, saidas_estados, dicionario_transicoes
+    estados = set()
+    estado_inicial = None
+    estados_finais = set()
+    saidas_estados = {}  # Dicionario: estado -> saida
+    dicionario_transicoes = {}
     
-    except Exception as e:
-        print(f"Erro ao processar entrada: {e}")
-        return None, None, None, None
+    i = 0
+    
+    # Q: lista de estados
+    if i < len(linhas) and linhas[i].startswith('Q:'):
+        estados_str = linhas[i][2:].strip()
+        estados = set(estados_str.split())
+        i += 1
+    
+    # I: estado inicial
+    if i < len(linhas) and linhas[i].startswith('I:'):
+        estado_inicial = linhas[i][2:].strip()
+        i += 1
+    
+    # F: estados finais
+    if i < len(linhas) and linhas[i].startswith('F:'):
+        estados_finais_str = linhas[i][2:].strip()
+        if estados_finais_str:
+            estados_finais = set(estados_finais_str.split())
+        i += 1
+    
+    # O: saidas dos estados
+    if i < len(linhas) and linhas[i].startswith('O:'):
+        saidas_str = linhas[i][2:].strip()
+        
+        saidas_items = saidas_str.split()
+        for item in saidas_items:
+            if '=' in item:
+                estado, saida = item.split('=', 1)
+                saidas_estados[estado.strip()] = saida.strip()
+        i += 1
+    
+    # transicoes
+    while i < len(linhas):
+        linha = linhas[i]
+        if '->' in linha:
+            # "estado_origem -> estado_destino | simbolos"
+            partes = linha.split('->')
+            estado_origem = partes[0].strip()
+            resto = partes[1].strip()
+            
+            if '|' in resto:
+                estado_destino, simbolos_str = resto.split('|', 1)
+                estado_destino = estado_destino.strip()
+                simbolos = simbolos_str.strip().split()
+                
+                # adicionando a transicao no dicionario
+                for simbolo in simbolos:
+                    chave = (estado_origem, simbolo)
+                    dicionario_transicoes[chave] = estado_destino
+        i += 1
+    
+    return estado_inicial, estados_finais, saidas_estados, dicionario_transicoes
+
 
 
 def imprimeMoore(dicionario_transicoes, saidas_estados):
@@ -115,39 +108,14 @@ def realizar_transicao_moore(estado_atual, simbolo, dicionario):
     else:
         return None
 
-def ler_arquivo_moore(nome_arquivo):
-    try:
-        with open(nome_arquivo, 'r', encoding='utf-8') as arquivo:
-            conteudo = arquivo.read()
-            return conteudo
-    except FileNotFoundError:
-        print(f"Arquivo '{nome_arquivo}' nao encontrado!")
-        return None
-    except Exception as e:
-        print(f"Erro ao ler arquivo: {e}")
-        return None
-
-def executar_simulador_moore(alfabeto, ingredientes):
+def executar_simulador_moore(alfabeto, ingredientes, conteudo_arquivo):
     print("=" * 60)
     print("SIMULADOR DE POCOES - MAQUINA DE MOORE")
     print("=" * 60)
     
-    # Solicitar nome do arquivo
-    print("Digite o nome do arquivo da Maquina de Moore:")
-    nome_arquivo = input(">>> ").strip()
-    
-    if not nome_arquivo:
-        print("Nome do arquivo nao pode estar vazio!")
-        return
-    
-    # leitura arquivo
-    entrada_moore = ler_arquivo_moore(nome_arquivo)
-    if entrada_moore is None:
-        print("Erro ao ler o arquivo da Maquina de Moore")
-        return
     
     # Processar maquina
-    estado_inicial, estados_finais, saidas_estados, dicionario_transicoes = ler_moore(entrada_moore)
+    estado_inicial, estados_finais, saidas_estados, dicionario_transicoes = ler_moore(conteudo_arquivo)
     
     if estado_inicial is None:
         print("Erro ao carregar maquina de Moore! Verifique o formato do arquivo.")

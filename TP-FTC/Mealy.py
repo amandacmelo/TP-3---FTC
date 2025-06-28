@@ -1,63 +1,50 @@
-def ler_automato_mealy(nome_arquivo):
+def ler_automato_mealy(linhas):
     """
     Lê um autômato Mealy de um arquivo no formato:
     Q: lista de estados
     I: estado inicial
     estado_origem -> estado_destino | entrada/saida entrada/saida ...
     """
-    try:
-        with open(nome_arquivo, 'r', encoding='utf-8') as arquivo:
-            linhas = arquivo.readlines()
-        
-        # Remove linhas vazias e espaços em branco
-        linhas = [linha.strip() for linha in linhas if linha.strip()]
-        
-        estado_inicial = None
-        dicionario_transicoes = {}
-        
-        i = 0
-        
-        # Primeira linha: Q: lista de estados
-        if linhas[i].startswith('Q:'):
-            estados = linhas[i][2:].strip().split()
-            i += 1
-        
-        # Segunda linha: I: estado inicial
-        if linhas[i].startswith('I:'):
-            estado_inicial = linhas[i][2:].strip()
-            i += 1
-        
-        # Resto das linhas: transições Mealy
-        while i < len(linhas):
-            linha = linhas[i]
-            if '->' in linha:
-                # Parse da transição: "estado_origem -> estado_destino | entrada/saida entrada/saida"
-                partes = linha.split('->')
-                estado_origem = partes[0].strip()
-                resto = partes[1].strip()
-                
-                # Separar estado destino das transições entrada/saida
-                if '|' in resto:
-                    estado_destino, transicoes_str = resto.split('|', 1)
-                    estado_destino = estado_destino.strip()
-                    transicoes = transicoes_str.strip().split()
-                    
-                    # Processar cada transição entrada/saida
-                    for transicao in transicoes:
-                        if '/' in transicao:
-                            entrada, saida = transicao.split('/', 1)
-                            chave = (estado_origem, entrada)
-                            dicionario_transicoes[chave] = (estado_destino, saida)
-            i += 1
-        
-        return estado_inicial, dicionario_transicoes
+    estado_inicial = None
+    dicionario_transicoes = {}
     
-    except FileNotFoundError:
-        print(f"Erro: Arquivo '{nome_arquivo}' não encontrado.")
-        return None, None
-    except Exception as e:
-        print(f"Erro ao ler o arquivo: {e}")
-        return None, None
+    i = 0
+    
+    # Primeira linha: Q: lista de estados
+    if linhas[i].startswith('Q:'):
+        estados = linhas[i][2:].strip().split()
+        i += 1
+    
+    # Segunda linha: I: estado inicial
+    if linhas[i].startswith('I:'):
+        estado_inicial = linhas[i][2:].strip()
+        i += 1
+    
+    # Resto das linhas: transições Mealy
+    while i < len(linhas):
+        linha = linhas[i]
+        if '->' in linha:
+            # Parse da transição: "estado_origem -> estado_destino | entrada/saida entrada/saida"
+            partes = linha.split('->')
+            estado_origem = partes[0].strip()
+            resto = partes[1].strip()
+            
+            # Separar estado destino das transições entrada/saida
+            if '|' in resto:
+                estado_destino, transicoes_str = resto.split('|', 1)
+                estado_destino = estado_destino.strip()
+                transicoes = transicoes_str.strip().split()
+                
+                # Processar cada transição entrada/saida
+                for transicao in transicoes:
+                    if '/' in transicao:
+                        entrada, saida = transicao.split('/', 1)
+                        chave = (estado_origem, entrada)
+                        dicionario_transicoes[chave] = (estado_destino, saida)
+        i += 1
+    
+    return estado_inicial, dicionario_transicoes
+
 
 def imprime_dicionario_mealy(dicionario_transicoes):
     """Imprime o dicionário de transições Mealy de forma organizada"""
@@ -101,10 +88,9 @@ def obter_reacao_ingrediente(simbolo, ingredientes):
         return ingredientes[simbolo]['reacao']
     return "sem reação"
 
-def executar_simulador_mealy(alfabeto, ingredientes):
+def executar_simulador_mealy(alfabeto, ingredientes, conteudo_arquivo):
     """Executa o simulador do autômato Mealy"""
-    nome_arquivo = 'Entradas/maquina_mealy.txt'
-    estado_inicial, dicionario_transicoes = ler_automato_mealy(nome_arquivo)
+    estado_inicial, dicionario_transicoes = ler_automato_mealy(conteudo_arquivo)
     
     if estado_inicial is None:
         print("Não foi possível carregar o autômato.")
