@@ -1,3 +1,10 @@
+import os
+import time
+
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
 def ler_moore(linhas):
     """
     formato maquina moore
@@ -11,7 +18,6 @@ def ler_moore(linhas):
 
     estados = set()
     estado_inicial = None
-    estados_finais = set()
     saidas_estados = {}  # Dicionario: estado -> saida
     dicionario_transicoes = {}
     
@@ -26,13 +32,6 @@ def ler_moore(linhas):
     # I: estado inicial
     if i < len(linhas) and linhas[i].startswith('I:'):
         estado_inicial = linhas[i][2:].strip()
-        i += 1
-    
-    # F: estados finais
-    if i < len(linhas) and linhas[i].startswith('F:'):
-        estados_finais_str = linhas[i][2:].strip()
-        if estados_finais_str:
-            estados_finais = set(estados_finais_str.split())
         i += 1
     
     # O: saidas dos estados
@@ -66,19 +65,34 @@ def ler_moore(linhas):
                     dicionario_transicoes[chave] = estado_destino
         i += 1
     
-    return estado_inicial, estados_finais, saidas_estados, dicionario_transicoes
+    return estado_inicial, saidas_estados, dicionario_transicoes
 
 
 
-def imprimeMoore(dicionario_transicoes, saidas_estados):
-    print("\n=== MAQUINA DE MOORE ===")
-    print("\n--- SAIDAS DOS ESTADOS ---")
-    for estado, saida in saidas_estados.items():
-        print(f"Estado {estado}: {saida}")
+def imprimeMoore(dicionario_transicoes, saidas_estados, estado_inicial):
+    # Tabela de transições formatada como a Mealy
+    linhas = []
+    linhas.append("\n╔════════════════╦═══════════╦════════════════╦════════════════╗")
+    linhas.append("║  Estado Atual  ║  Entrada  ║ Próximo Estado ║     Saída      ║")
+    linhas.append("╠════════════════╬═══════════╬════════════════╬════════════════╣")
+
+    for (estado_origem, simbolo), estado_destino in dicionario_transicoes.items():
+        if estado_destino != 'erro':
+            saida_destino = saidas_estados.get(estado_destino, "N/A")
+            linhas.append(f"║ {estado_origem:^14} ║ {simbolo:^9} ║ {estado_destino:^14} ║ {saida_destino:^14} ║")
+            linhas.append("╠════════════════╬═══════════╬════════════════╬════════════════╣")
     
-    print("\n--- TRANSICOES ---")
-    for chave, valor in dicionario_transicoes.items():
-        print(f"{chave} -> {valor}")
+    # Substituir a última linha de separação pelo rodapé
+    linhas[-1] = "╚════════════════╩═══════════╩════════════════╩════════════════╝"
+
+    # Imprimir a tabela
+    for linha in linhas:
+        print(linha)
+
+    # Informações adicionais
+    print("╔══════════════════════════════════════════════════════════════╗")
+    print(f"║ Estado Inicial: {estado_inicial:<45}║")
+    print("╚══════════════════════════════════════════════════════════════╝")
 
 def obter_saida_estado(estado, saidas_estados):
     """
@@ -90,7 +104,7 @@ def obter_saida_estado(estado, saidas_estados):
         # Mapear codigos de saida para descricoes simples
         mapeamento_saidas = {
             'inicio': 'Caldeirao preparado para receber ingredientes',
-            'processando': 'Processando ingredientes iniciais...',
+            'processando': 'Processando ingre dientes iniciais...',
             'misturando': 'Misturando componentes ativos...',
             'refinando': 'Refinando a mistura final...',
             'completo': 'Pocao completa e pronta para uso!',
@@ -109,45 +123,45 @@ def realizar_transicao_moore(estado_atual, simbolo, dicionario):
         return None
 
 def executar_simulador_moore(alfabeto, ingredientes, conteudo_arquivo):
-    print("=" * 60)
-    print("SIMULADOR DE POCOES - MAQUINA DE MOORE")
-    print("=" * 60)
-    
-    
+
     # Processar maquina
-    estado_inicial, estados_finais, saidas_estados, dicionario_transicoes = ler_moore(conteudo_arquivo)
+    estado_inicial, saidas_estados, dicionario_transicoes = ler_moore(conteudo_arquivo)
     
     if estado_inicial is None:
         print("Erro ao carregar maquina de Moore! Verifique o formato do arquivo.")
         return
     
-    #imprimeMoore(dicionario_transicoes, saidas_estados)
+    imprimeMoore(dicionario_transicoes, saidas_estados, estado_inicial)
     
     ingredientes_usados = []
     estado_atual = estado_inicial
     historico_saidas = []
-    
-    print(f"\nIngredientes disponiveis:")
-    for simbolo, info in ingredientes.items():
-        if simbolo != 'e':
-            print(f"   {simbolo} - {info['nome']}")
-    
-    # saida do estado
+    historico_transicoes = []
+
+    estado_atual = estado_inicial
     saida_atual = obter_saida_estado(estado_atual, saidas_estados)
-    print(f"Saida atual: {saida_atual}")
     historico_saidas.append(saida_atual)
-    
+    estado_anterior = estado_atual
+    historico_transicoes.append((estado_anterior, '', estado_atual, saida_atual))
+
     # Loop principal de processamento
     while True:
-        print("\n" + "-" * 50)
-        print("Insira o simbolo do ingrediente (ou 'sair' para terminar):")
-        ingrediente_simbolo = input(">>> ").strip().lower()
-        
-        if ingrediente_simbolo == 'sair':
-            break
-            
+        limpar_tela()
+        imprimeMoore(dicionario_transicoes, saidas_estados, estado_inicial)
+        # Mostrar histórico em formato de tabela com cabeçalho
+        print("\n╔═════════════════════════════════════════════════════════════════════════════════════════════╗")
+        print("║                                📜 HISTÓRICO DE TRANSIÇÕES                                   ║")
+        print("╠════════════╦════════════╦════════════════╦══════════════════════════════════════════════════╣")
+        print("║  Origem    ║  Entrada   ║    Destino     ║            Saída                                 ║")
+        print("╠════════════╬════════════╬════════════════╬══════════════════════════════════════════════════╣")
+        for origem, simb, destino, saida in historico_transicoes:
+            print(f"║ {origem:^10} ║ {simb:^10} ║ {destino:^14} ║ {saida:^48} ║")
+        print("╚════════════╩════════════╩════════════════╩══════════════════════════════════════════════════╝")
+
+        ingrediente_simbolo = input("\nInsira um ingrediente (a, p, o, d, c, s): ").strip().lower()
         if ingrediente_simbolo not in alfabeto:
-            print(f"Ingrediente '{ingrediente_simbolo}' nao esta no alfabeto valido!")
+            print(f"Ingrediente '{ingrediente_simbolo}' inválido! ")
+            time.sleep(1)
             continue
         
         ingredientes_usados.append(ingrediente_simbolo)
@@ -161,42 +175,58 @@ def executar_simulador_moore(alfabeto, ingredientes, conteudo_arquivo):
             print(f"   Ingrediente: '{ingrediente_simbolo}'")
             continue
         
+
+
         estado_atual = novo_estado
-        
-        # Obter e mostrar informacoes do ingrediente
-        if ingrediente_simbolo in ingredientes:
-            info_ingrediente = ingredientes[ingrediente_simbolo]
-            print(f"Adicionado: {info_ingrediente['nome']}")
-        
         # Mostrar novo estado e sua saida
         saida_atual = obter_saida_estado(estado_atual, saidas_estados)
-        print(f"Novo estado: {estado_atual}")
-        print(f"Saida do estado: {saida_atual}")
         historico_saidas.append(saida_atual)
+        estado_anterior = estado_atual
+        historico_transicoes.append((estado_anterior, ingrediente_simbolo, estado_atual, saida_atual))
+
+        # Mostrar histórico em formato de tabela com cabeçalho
+        print("\n╔═════════════════════════════════════════════════════════════════════════════════════════════╗")
+        print("║                                📜 HISTÓRICO DE TRANSIÇÕES                                   ║")
+        print("╠════════════╦════════════╦════════════════╦══════════════════════════════════════════════════╣")
+        print("║  Origem    ║  Entrada   ║    Destino     ║                     Saída                        ║")
+        print("╠════════════╬════════════╬════════════════╬══════════════════════════════════════════════════╣")
+        for origem, simb, destino, saida in historico_transicoes:
+            print(f"║ {origem:^10} ║ {simb:^10} ║ {destino:^14} ║ {saida:^48} ║")
+        print("╚════════════╩════════════╩════════════════╩══════════════════════════════════════════════════╝")
+
+        resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
+        while resposta not in ('s', 'n'):
+            print("Opção inválida! Tente novamente.")
+            resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
+        if resposta != 's':
+            break
         
-        # Verificar se chegou a um estado final
-        if estado_atual in estados_finais:
-            print("A pocao ja esta pronta para ser utilizada\n Voce pode continuar adicionando ingredientes ou encerrar a preparacao.")
-        elif estado_atual == 'erro':
-            print("ERRO: Chegou ao estado de erro :(")
     
     # Verificar resultado final
-    print("\n" + "=" * 60)
-    print("RESULTADO FINAL")
-    print("=" * 60)
-    
-    print(f"Ingredientes utilizados: {' -> '.join(ingredientes_usados)}")
+    # Resultado final estilizado (sem estado final, estilo Mealy)
+    print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
+    print("║                                 🌟 RESULTADO FINAL 🌟                                ║")
+    print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
+    print(f"║ Estado inicial da execução: {estado_inicial:<57}║")
+    print(f"║ Estado final da execução:   {estado_atual:<57}║")
+    print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
 
-    if estado_atual in estados_finais:
-        print("SUCESSO: A maquina terminou em estado final! A pocao esta prontinha!")
-    else:
-        print("A maquina nao terminou em estado final.")
     
-    print(f"\nHistorico de saidas:")
+
+    # Histórico de saídas
+    print("║ Histórico de saídas:                                                                 ║")
     for i, saida in enumerate(historico_saidas):
         if i == 0:
-            print(f"   {i}: {saida} (inicial)")
+            linha_saida = f"{i+1}: {saida} (inicial)"
         else:
-            print(f"   {i}: {saida} (apos '{ingredientes_usados[i-1]}')")
-    
-    print("\n" + "=" * 60)
+            linha_saida = f"{i+1}: {saida} (após '{ingredientes_usados[i - 1]}')"
+        print(f"║   {linha_saida:<83}║")
+
+    # Resultado geral (sem depender de estado final)
+    print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
+    if estado_atual == 'erro':
+        print("║ Resultado:   A máquina entrou em um estado de erro (transição inválida).             ║")
+    else:
+        print("║ Resultado:   A execução terminou corretamente sem transições inválidas.              ║")
+
+    print("╚══════════════════════════════════════════════════════════════════════════════════════╝")

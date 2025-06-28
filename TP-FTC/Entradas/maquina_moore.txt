@@ -1,6 +1,5 @@
 Q: I ing1 ing2 F erro
 I: I
-F: F
 O: I=inicio ing1=processando ing2=misturando F=completo erro=erro
 I -> ing1 | a
 I -> erro | p o e m c
