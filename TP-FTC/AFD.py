@@ -55,16 +55,21 @@ def ler_automato(linhas):
 
 # Exibe o dicionário de transições do autômato
 def imprime_dicionario(dicionario, finais, inicial):
-    print("\n╔══════════════════════════════════════════════╗")
-    print("║          DICIONÁRIO DE TRANSIÇÕES            ║")
-    print("╠═════════════════╦═══════════╦════════════════╣")
-    print("║  Estado Atual   ║  Símbolo  ║ Próximo Estado ║")
-    print("╠═════════════════╬═══════════╬════════════════╣")
+    linhas = []
+    linhas.append("\n╔══════════════════════════════════════════════╗")
+    linhas.append("║          DICIONÁRIO DE TRANSIÇÕES            ║")
+    linhas.append("╠═════════════════╦═══════════╦════════════════╣")
+    linhas.append("║  Estado Atual   ║  Símbolo  ║ Próximo Estado ║")
+    linhas.append("╠═════════════════╬═══════════╬════════════════╣")
+    
     for (estado_atual, simbolo), destino in dicionario.items():
         if destino != "erro":
-            print(f"║ {estado_atual:^15} ║ {simbolo:^9} ║ {destino:^14} ║")
-        print("╠═════════════════╬═══════════╬════════════════╣")
-    print("╚═════════════════╩═══════════╩════════════════╝")
+            linhas.append(f"║ {estado_atual:^15} ║ {simbolo:^9} ║ {destino:^14} ║")
+            linhas.append("╠═════════════════╬═══════════╬════════════════╣")
+    
+    linhas[-1] = "╚═════════════════╩═══════════╩════════════════╝"
+    for linha in linhas:
+        print(linha)
     print("╔══════════════════════════════════════════════╗")
     print(f"║ Estado Inicial: {inicial:<29}║")
     print(f"║ Estado(s) Final(is): {', '.join(finais):<24}║")

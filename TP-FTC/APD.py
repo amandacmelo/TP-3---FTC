@@ -1,100 +1,108 @@
+import os
+import time
+
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def simbolo_para_nome_reacao(simbolo):
+    mapeamento_reacoes = {
+        'A': 'Dilui',
+        'P': 'Perfuma', 
+        'O': 'Engrossa',
+        'D': 'Acido',
+        'C': 'Alcalino',
+        'S': 'Fedido',
+        'λ': 'λ'
+    }
+    return mapeamento_reacoes.get(simbolo, simbolo)
+
+
 # Pilha para armazenar as reações (variável global do módulo)
 pilha_reacoes = []
 
 def ler_automato_pilha(linhas):
-    """
-    Lê um autômato de pilha a partir de texto formatado
-    """ 
     estados = set()
     estado_inicial = None
     estados_finais = set()
     dicionario_transicoes = {}
-    
+
     i = 0
-    
-    # Primeira linha: Q: lista de estados
+
     if i < len(linhas) and linhas[i].startswith('Q:'):
         estados_str = linhas[i][2:].strip()
         estados = set(estados_str.split())
         i += 1
-    
-    # Segunda linha: I: estado inicial
+
     if i < len(linhas) and linhas[i].startswith('I:'):
         estado_inicial = linhas[i][2:].strip()
         i += 1
-    
-    # Terceira linha: F: estados finais
+
     if i < len(linhas) and linhas[i].startswith('F:'):
         estados_finais_str = linhas[i][2:].strip()
         if estados_finais_str:
             estados_finais = set(estados_finais_str.split())
         i += 1
-    
-    # Resto das linhas: transições
+
     while i < len(linhas):
         linha = linhas[i]
         if '->' in linha:
-            # Parse da transição APD: "estado_origem -> estado_destino | simbolo_lido, simbolo_desempilhar, simbolo_empilhar"
             partes = linha.split('->')
             estado_origem = partes[0].strip()
             resto = partes[1].strip()
-            
+
             if '|' in resto:
                 estado_destino, transicao_str = resto.split('|', 1)
                 estado_destino = estado_destino.strip()
                 transicao_info = [x.strip() for x in transicao_str.strip().split(',')]
-                
+
                 if len(transicao_info) >= 3:
                     simbolo_lido = transicao_info[0].strip()
                     simbolo_desempilhar = transicao_info[1].strip()
                     simbolo_empilhar = transicao_info[2].strip()
-                    
-                    # Tratar epsilon (ε) como string vazia
+
                     if simbolo_desempilhar == 'v':
                         simbolo_desempilhar = ''
                     if simbolo_empilhar == 'v':
                         simbolo_empilhar = ''
-                    
+
                     chave = (estado_origem, simbolo_lido, simbolo_desempilhar)
                     dicionario_transicoes[chave] = (estado_destino, simbolo_empilhar)
-
         i += 1
-        
 
     return estado_inicial, estados_finais, dicionario_transicoes
 
-
 def imprime_dicionario_apd(dicionario_transicoes, estado_inicial, estados_finais):
     linhas = []
-    linhas.append("╔═════════════════╦═══════════╦═══════════════╦═══════════════╗")
-    linhas.append("║  Estado Atual   ║  Símbolo  ║  Desempilha   ║    Empilha    ║")
-    linhas.append("╠═════════════════╬═══════════╬═══════════════╬═══════════════╣")
+    linhas.append("╔═════════════════╦═══════════╦═══════════════╦═══════════════╦═══════════════╗")
+    linhas.append("║  Estado Atual   ║  Símbolo  ║  Desempilha   ║    Empilha    ║ Próximo Estado║")
+    linhas.append("╠═════════════════╬═══════════╬═══════════════╬═══════════════╬═══════════════╣")
     
     for chave, valor in dicionario_transicoes.items():
-        estado_atual, simbolo, topo_pilha = chave
+        estado_atual, simbolo, desempilha = chave
         novo_estado, empilha = valor
-        if novo_estado == "erro":
-            continue
-        desempilha = topo_pilha
-        if desempilha == '' or empilha is None:
-            desempilha = "λ"
-
-        if empilha == '' or empilha is None:
-            empilha = "λ"
-        linhas.append(f"║ {estado_atual:^15} ║ {simbolo:^9} ║ {desempilha:^13} ║ {empilha:^13} ║")
-        linhas.append("╠═════════════════╬═══════════╬═══════════════╬═══════════════╣")
+        if desempilha != '':
+            desempilha = desempilha
+        else:
+            desempilha = 'λ'
+            
+        if empilha != '':
+            empilha = empilha
+        else:
+            empilha = 'λ'
+        if novo_estado !=  'erro':
+            linhas.append(f"║ {estado_atual:^15} ║ {simbolo:^9} ║ {simbolo_para_nome_reacao(desempilha):^13} ║ {simbolo_para_nome_reacao(empilha):^13} ║ {novo_estado:^13} ║")
+            linhas.append("╠═════════════════╬═══════════╬═══════════════╬═══════════════╬═══════════════╣")
     
-    # troca a última linha (se existir) por linha dupla rodapé
-    linhas[-1] = "╚═════════════════╩═══════════╩═══════════════╩═══════════════╝"
-
+    linhas[-1] = "╚═════════════════╩═══════════╩═══════════════╩═══════════════╩═══════════════╝"
+           
+    
     for linha in linhas:
         print(linha)
     
-    print("╔═════════════════════════════════════════════════════════════╗")
-    print(f"║ Estado Inicial: {estado_inicial:<44}║")
-    print(f"║ Estado(s) Final(is): {', '.join(estados_finais):<39}║")
-    print("╚═════════════════════════════════════════════════════════════╝")
-
+    print("╔═════════════════════════════════════════════════════════════════════════════╗") 
+    print(f"║ Estado Inicial: {estado_inicial:<60}║")
+    print(f"║ Estado(s) Final(is): {', '.join(estados_finais):<55}║")
+    print("╚═════════════════════════════════════════════════════════════════════════════╝")
 
 def mostrar_pilha(ingredientes):
     if not pilha_reacoes:
@@ -102,56 +110,42 @@ def mostrar_pilha(ingredientes):
         print("║ Poção neutra (vazia) ║")
         print("╚══════════════════════╝")
     else:
-        print("\n🧪 Reações ativas na poção (topo no topo):")
+        print("\n🧪 Reações ativas na poção:")
         print("╔════════════════╗")
         for simbolo in reversed(pilha_reacoes):
-            reacao = ingredientes[simbolo]['reacao']
+            reacao = simbolo_para_nome_reacao(simbolo)  # Usando sua função original
             print(f"║ {reacao:^14} ║")
         print("╚════════════════╝")
 
-
 def processar_pilha(simbolo, simbolo_desempilhar, simbolo_empilhar, ingredientes):
     global pilha_reacoes
-
+    
     if simbolo not in ingredientes:
         print("⚠️ Ingrediente desconhecido!")
         return False
 
     nome = ingredientes[simbolo]['nome']
-    reacao_atual = ingredientes[simbolo]['reacao']
-
-    print("\n🧪 Adicionando ingrediente à poção:")
-    print("╔══════════════════════════════════════════════════════════╗")
-    print(f"║ Ingrediente: {nome:<43} ║")
-    print(f"║ Reação: {reacao_atual:<46} ║")
-    print("╠══════════════════════════════════════════════════════════╣")
-
-    # Desempilhamento
+    reacao = ingredientes[simbolo]['reacao']
+    
+    
+    # Verificar se pode desempilhar
     if simbolo_desempilhar != '':
+        # Desempilhar símbolo específico
         if not pilha_reacoes or pilha_reacoes[-1] != simbolo_desempilhar:
             topo_atual = pilha_reacoes[-1] if pilha_reacoes else 'VAZIA'
-            print(f"║ Desempilhado: Esperado: '{simbolo_desempilhar}', topo: '{topo_atual}'{' ' * (38 - len(simbolo_desempilhar) - len(topo_atual) - 19)}║")
-            print("╚══════════════════════════════════════════════════════════╝")
+            print(f"Erro ao desempilhar: esperava '{simbolo_desempilhar}', topo é '{topo_atual}'")
+        
             return False
         else:
             removido = pilha_reacoes.pop()
-            print(f"║ Desempilhado: {simbolo_desempilhar:<41} ║")
-    else:
-        print(f"║ Desempilhado: {'λ':<41} ║")
+            reacao_removida = simbolo_para_nome_reacao(removido)
 
-    # Empilhamento
+    
+    # Empilhar se necessário
     if simbolo_empilhar != '':
-        pilha_reacoes.append(simbolo)
-        print(f"║ Empilhado:   {ingredientes[simbolo]['reacao']:<38} ║")
-    else:
-        print(f"║ Empilhado:   {'λ':<38} ║")
-
-    print("╚══════════════════════════════════════════════════════════╝")
-
-    mostrar_pilha(ingredientes)
+        pilha_reacoes.append(simbolo_empilhar)
+        empilhado = simbolo_para_nome_reacao(simbolo_empilhar)
     return True
-
-
 
 def realizar_transicao_apd(estado_atual, simbolo, dicionario):
     """
@@ -179,44 +173,80 @@ def realizar_transicao_apd(estado_atual, simbolo, dicionario):
     
     return None, None, None
 
-def executar_simulador_pilha(alfabeto, ingredientes, conteudo_arquivo):
+def executar_simulador_pilha(alfabeto, ingredientes, conteudo):
     global pilha_reacoes
-    estado_inicial, estados_finais, dicionario_transicoes = ler_automato_pilha(conteudo_arquivo)
-    if estado_inicial is None:
-        print(" Erro ao ler autômato.")
-        return
 
+    estado_inicial, estados_finais, dicionario_transicoes = ler_automato_pilha(conteudo)
+
+    if estado_inicial is None:
+        print("Erro ao ler o autômato.")
+        return
+        
     imprime_dicionario_apd(dicionario_transicoes, estado_inicial, estados_finais)
+    
     ingredientes_usados = []
     estado_atual = estado_inicial
     pilha_reacoes = []
+    historico_transicoes = []
+
+    mostrar_pilha(ingredientes)
 
     while True:
-        ingrediente_simbolo = input("Insira um ingrediente (a, p, o, d, c, s): ").strip().lower()
+        limpar_tela()
+        imprime_dicionario_apd(dicionario_transicoes, estado_inicial, estados_finais)
+        if historico_transicoes != []:
+            print("╔════════════════════════════════════════════════════════════════╗")
+            print("║                       HISTÓRICO DE TRANSIÇÕES                  ║")
+            print("╠═══════════╦══════════╦═══════════╦══════════════╦══════════════╣")
+            print("║  Origem   ║ Símbolo  ║  Destino  ║  Desempilha  ║   Empilha    ║")
+            print("╠═══════════╬══════════╬═══════════╬══════════════╬══════════════╣")
+            for i, (origem, simb, destino, desemp, emp) in enumerate(historico_transicoes):
+                print(f"║{origem:^10} ║ {simb:^8} ║ {destino:^9} ║ {simbolo_para_nome_reacao(desemp):^12} ║ {simbolo_para_nome_reacao(emp):^12} ║")
+            print("╚═══════════╩══════════╩═══════════╩══════════════╩══════════════╝")
+        
 
-        if ingrediente_simbolo not in alfabeto:
-            print(f"Ingrediente '{ingrediente_simbolo}' inválido! Tente Novamente")
+        simbolo = input("\nInsira um ingrediente (a, p, o, d, c, s): ").strip().lower()
+        if simbolo not in alfabeto:
+            print(f"Ingrediente '{simbolo}' inválido! Ingredientes válidos: {', '.join(alfabeto)}")
+            time.sleep(1)
             continue
 
-        novo_estado, simbolo_desempilhar, simbolo_empilhar = realizar_transicao_apd(estado_atual, ingrediente_simbolo, dicionario_transicoes)
+        novo_estado, simbolo_desempilhar, simbolo_empilhar = realizar_transicao_apd(estado_atual, simbolo, dicionario_transicoes)
 
         if novo_estado is None:
-            print("\n Transição inválida!")
+            print("⚠️ Transição inválida. Nenhuma regra encontrada.")
             print(f"   Estado atual: {estado_atual}")
-            print(f"   Ingrediente: {ingrediente_simbolo}")
+            print(f"   Ingrediente: {simbolo}")
             print(f"   Topo da pilha: {pilha_reacoes[-1] if pilha_reacoes else 'VAZIA'}")
             continue
 
         # Processar ação na pilha
-        if not processar_pilha(ingrediente_simbolo, simbolo_desempilhar, simbolo_empilhar, ingredientes):
-            print(" ERRO: Falha ao processar pilha!")
+        if not processar_pilha(simbolo, simbolo_desempilhar, simbolo_empilhar, ingredientes):
+            print("Erro ao processar pilha.")
             break
-
-        ingredientes_usados.append(ingrediente_simbolo)
+        ingredientes_usados.append(simbolo)
         estado_atual = novo_estado
-        print(f"📍 Estado atual: {estado_atual}")
+        # Mostrar histórico de transições
+        if simbolo_desempilhar == '':
+            simbolo_desempilhar = 'λ'
+            
+        if simbolo_empilhar == '':
+
+            simbolo_empilhar = 'λ'
+        historico_transicoes.append((estado_atual, simbolo, novo_estado, simbolo_desempilhar, simbolo_empilhar))
 
 
+        print("╔════════════════════════════════════════════════════════════════╗")
+        print("║                       HISTÓRICO DE TRANSIÇÕES                  ║")
+        print("╠═══════════╦══════════╦═══════════╦══════════════╦══════════════╣")
+        print("║  Origem   ║ Símbolo  ║  Destino  ║  Desempilha  ║   Empilha    ║")
+        print("╠═══════════╬══════════╬═══════════╬══════════════╬══════════════╣")
+        for i, (origem, simb, destino, desemp, emp) in enumerate(historico_transicoes):
+            print(f"║{origem:^10} ║ {simb:^8} ║ {destino:^9} ║ {simbolo_para_nome_reacao(desemp):^12} ║ {simbolo_para_nome_reacao(emp):^12} ║")
+        print("╚═══════════╩══════════╩═══════════╩══════════════╩══════════════╝")
+       
+        mostrar_pilha(ingredientes)
+       
         resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
         while resposta not in ('s', 'n'):
             print("Opção inválida! Tente novamente.")
@@ -225,29 +255,33 @@ def executar_simulador_pilha(alfabeto, ingredientes, conteudo_arquivo):
             break
 
 
+
+    # Verificações para o resultado final
+    estado_final_valido = estado_atual in estados_finais
+    pilha_vazia = len(pilha_reacoes) == 0    
     # Resultado final
     print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
-    print("║ RESULTADO FINAL                                                                      ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
-    print("════════════════════════════════════════════════════════════════════════════════════════")
-    print(f" Ingredientes utilizados: {' -> '.join(ingredientes_usados) if ingredientes_usados else 'Nenhum'}")
-    print(f" Estado final da execução: {estado_atual}")
-    print("                                                                                      ")
+    print("║                                 🌟 RESULTADO FINAL 🌟                                ║")
+    print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
+    print(f"║ Estado final da execução: {estado_atual:<59}║")
 
-    estado_final_valido = estado_atual in estados_finais
-    pilha_vazia = not pilha_reacoes
+    if estado_atual == 'erro':
+        print("║ Resultado:   O autômato entrou em um estado de erro (transição inválida).            ║")
+        print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
 
-    #print(f" Estado final válido: {'✅ Sim' if estado_final_valido else ' Não'}")
-    #print(f" Pilha vazia: {'✅ Sim' if pilha_vazia else ' Não'}")
+    elif estado_final_valido and pilha_vazia:
+        print("║ Resultado:   A poção foi concluída com sucesso! Estado final alcançado!              ║")
+        print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
+    elif not estado_final_valido and pilha_vazia:
+        print("║ Resultado:   A execução terminou sem atingir um estado final.                        ║")
+        print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
 
-    if estado_final_valido and pilha_vazia:
-        print("A poção está perfeita! Autômato ACEITOU a sequência! :)")
+    elif estado_final_valido and not pilha_vazia:
+        print("║ Resultado:   Estado final alcançado, mas a pilha não está vazia.                     ║")
+        print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
+        mostrar_pilha(ingredientes)
+
     else:
-        print(" A combinação não funcionou. Autômato REJEITOU a sequência. :( ")
-        if not estado_final_valido:
-            print("    -> Não terminou em estado final")
-        if not pilha_vazia:
-            print("    -> Pilha não está vazia")
-
-    mostrar_pilha(ingredientes)
-    print("════════════════════════════════════════════════════════════════════════════════════════")
+        print("║ Resultado:   A execução falhou - estado não final e pilha não vazia.                 ║")
+        print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
+        mostrar_pilha(ingredientes)
