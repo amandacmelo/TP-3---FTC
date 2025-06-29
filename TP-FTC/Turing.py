@@ -1,6 +1,18 @@
-# Alfabeto dos ingredientes
+import os
+import time
+
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
+def move_cabecote(cabecote, direcao):
+    if direcao.upper() == 'D':
+        cabecote += 1
+    elif direcao.upper() == 'E':
+        cabecote -= 1
+        if cabecote < 1:  # não deixa passar da posição 〈
+            cabecote = 1
+    return cabecote
 
 # Leitura do arquivo da máquina de Turing
 def ler_maquina_turing(linhas):
@@ -41,86 +53,126 @@ def ler_maquina_turing(linhas):
 
     return estado_inicial, estados_finais, dicionario_transicoes
 
-def imprime_dicionario(dicionario_transicoes):
-    print("\n╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║                          DICIONÁRIO DE TRANSIÇÕES                            ║")
-    print("╠═════════════════╦════════════╦═══════════════════════════════════════════════╣")
-    print("║  Estado Atual   │  Símbolo   │   (Próximo Estado, Ingrediente, Direção)      ║")
-    print("╠═════════════════╬════════════╬═══════════════════════════════════════════════╣")
-    
-    for chave, destino in dicionario_transicoes.items():
-        estado_atual, simbolo = chave
-        proximo_estado, simbolo_escrito, direcao = destino
-        print(f"║ {estado_atual:^15} │ {simbolo:^10} │ ({proximo_estado}, {simbolo_escrito}, {direcao}){' ' * (39 - len(str(proximo_estado + simbolo_escrito + direcao)))} ║")
-    
-    print("╚═════════════════╩════════════╩═══════════════════════════════════════════════╝")
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  Estado Inicial: I                                                           ║")
-    print("║  Estado Final: F                                                             ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+def imprime_dicionario(dicionario_transicoes, ingredientes, estado_inicial, estados_finais):
+    linhas = []
+    linhas.append("╔══════════════════╦═══════════════════╦════════════════╦══════════════════════╦══════════════╗")
+    linhas.append("║   Estado Atual   ║   Símbolo Lido    ║   Novo Estado  ║   Símbolo Escrito    ║   Direção    ║")
+    linhas.append("╠══════════════════╬═══════════════════╬════════════════╬══════════════════════╬══════════════╣")
 
-def executar_maquina_turing(conteudo_arquivo):
+    for (estado_atual, simbolo_lido), (novo_estado, simbolo_escrito, direcao) in dicionario_transicoes.items():
+        linhas.append(f"║ {estado_atual:^16} ║ {ingredientes[simbolo_lido]['nome']:^17} ║ {novo_estado:^14} ║ {ingredientes[simbolo_escrito]['nome']:^20} ║ {direcao:^12} ║")
+        linhas.append("╠══════════════════╬═══════════════════╬════════════════╬══════════════════════╬══════════════╣")
+
+    # Substitui a última linha pelo rodapé da tabela
+    linhas[-1] ="╚══════════════════╩═══════════════════╩════════════════╩══════════════════════╩══════════════╝"
+
+    for linha in linhas:
+        print(linha)
+    print("╔═════════════════════════════════════════════════════════════════════════════════════════════╗") 
+    print(f"║ Estado Inicial: {estado_inicial:<76}║")
+    print(f"║ Estado(s) Final(is): {', '.join(estados_finais):<71}║")
+    print("╚═════════════════════════════════════════════════════════════════════════════════════════════╝")
+
+def exibir_fita(fita, cabecote):
+    RED = '\033[91m'
+    RESET = '\033[0m'
+
+    print("\n🧪 Fita Completa:")
+
+    # Linha da fita com destaque na posição do cabeçote
+    visual_fita = ""
+    for i, simbolo in enumerate(fita):
+        if i == cabecote:
+            visual_fita += f"{RED}{simbolo}{RESET} "  # Cor vermelha
+        else:
+            visual_fita += f"{simbolo} "
+    print(visual_fita.strip())
+
+
+
+def executar_maquina_turing(conteudo_arquivo, alfabeto, ingredientes):
     estado_inicial, estados_finais, dicionario = ler_maquina_turing(conteudo_arquivo)
     if dicionario is None:
         print(" Erro: Arquivo maquina_turing.txt não encontrado ou está mal formatado.")
         return
     estado_atual = estado_inicial
+    historico = []
+    imprime_dicionario(dicionario, ingredientes, estado_inicial, estados_finais)  #  Imprime o dicionário no início
 
-    imprime_dicionario(dicionario)  #  Imprime o dicionário no início
+    fita = ['〈'] + ['_'] * 50 #〈 ocupa a posição 0
 
-    fita = ['_'] * 50
-    cabecote = 0
-    estado_invalido = False  # Indicador de erro
+    cabecote = 1
+    estado_erro = False  # Indicador de erro
 
     while True:
-        simbolo = input("Insira um ingrediente (a, p, o, d, c, s): ").strip().lower()
 
-        if simbolo not in ['a', 'p', 'o', 'd', 'c', 's']:
+        limpar_tela()
+        imprime_dicionario(dicionario, ingredientes, estado_inicial, estados_finais)  #  Imprime o dicionário para auxiliar
+        if historico != []:
+            print("\n╔═════════════════════════════════════════════════════════════════════════════════════════════╗")
+            print("║                               📜 HISTÓRICO DE TRANSIÇÕES                                    ║")
+            print("╠══════════════════╦═══════════════════╦════════════════╦══════════════════════╦══════════════╣")
+            print("║   Estado Atual   ║   Símbolo Lido    ║   Novo Estado  ║   Símbolo Escrito    ║   Direção    ║")
+            print("╠══════════════════╬═══════════════════╬════════════════╬══════════════════════╬══════════════╣")
+            for atual, lido, proximo, escrito, direcao in historico:
+                print(f"║ {atual:^16} ║ {ingredientes[lido]['nome']:^17} ║ {proximo:^14} ║ {ingredientes[lido]['nome']:^20} ║ {direcao:^12} ║")
+            print("╚══════════════════╩═══════════════════╩════════════════╩══════════════════════╩══════════════╝")
+            exibir_fita(fita, cabecote)
+        simbolo_lido = input("Insira um ingrediente (a, p, o, d, c, s): ").strip().lower()
+
+        if simbolo_lido not in alfabeto:
             print(" Ingrediente inválido! Insira apenas (a, p, o, d, c, s).\n")
             continue
         
-        if simbolo in ['a', 'p', 'o', 'd', 'c', 's']:
-            fita[cabecote] = simbolo
-            chave = (estado_atual, simbolo)
+        # Realiza uma transiçao
+        chave = (estado_atual, simbolo_lido)
 
         if chave in dicionario:
             novo_estado, simbolo_escrito, direcao = dicionario[chave]
             fita[cabecote] = simbolo_escrito
             estado_atual = novo_estado
             cabecote = move_cabecote(cabecote, direcao)
-            print(f"Estado atual após o ingrediente '{simbolo}': {estado_atual}")
+            historico.append((estado_atual, simbolo_lido, novo_estado, simbolo_escrito, direcao))
+            print("\n╔═════════════════════════════════════════════════════════════════════════════════════════════╗")
+            print("║                               📜 HISTÓRICO DE TRANSIÇÕES                                    ║")
+            print("╠══════════════════╦═══════════════════╦════════════════╦══════════════════════╦══════════════╣")
+            print("║   Estado Atual   ║   Símbolo Lido    ║   Novo Estado  ║   Símbolo Escrito    ║   Direção    ║")
+            print("╠══════════════════╬═══════════════════╬════════════════╬══════════════════════╬══════════════╣")
+            for atual, lido, proximo, escrito, direcao in historico:
+                print(f"║ {atual:^16} ║ {ingredientes[lido]['nome']:^17} ║ {proximo:^14} ║ {ingredientes[lido]['nome']:^20} ║ {direcao:^12} ║")
+            print("╚══════════════════╩═══════════════════╩════════════════╩══════════════════════╩══════════════╝")
+            exibir_fita(fita, cabecote)
         else:
-            print(f"⚠️ Atenção: Transição inexistente para ({estado_atual}, '{simbolo}'). Cabeçote permanece.")
-            estado_invalido = True  # Marca que houve transição inválida
+            print(f"⚠️ Atenção: Transição inexistente para ({estado_atual}, '{simbolo_lido}'). Cabeçote permanece.")
+            estado_erro = True  # Marca que houve transição inválida
 
-        if estado_atual in estados_finais:
-            print("\n✅ Atingiu um estado final!")
-            break
+
 
         resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
+        while resposta not in ('s', 'n'):
+            print("Opção inválida! Tente novamente.")
+            resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
         if resposta != 's':
             break
 
     print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
-    print("║ RESULTADO FINAL                                                                      ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
+    print("║                                 🌟 RESULTADO FINAL 🌟                                ║")
+    print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
+    print(f"║ Estado inicial da execução: {estado_inicial:<57}║")
+    print(f"║ Estado final da execução:   {estado_atual:<57}║")
     intensidade = cabecote + 1
-    print(f" -> Intensidade da poção: {intensidade} 🔥 (Quanto mais à direita, mais intensa!)     ")
-    print(f" -> Estado final da execução: {estado_atual}                                          ")
-    if estado_invalido:
-        print("  Atenção: Houve pelo menos uma transição inválida durante a execução.              ")
+    print(f"║ Intensidade da poção:     🔥{intensidade:<57}║")
+    print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
+
+
+    # Mensagens de aviso e resultado
+    if estado_erro:
+        print("║ Resultado:   A máquina entrou em um estado de erro (transição inválida).             ║")
     elif estado_atual not in estados_finais:
-        print("  Atenção: A execução terminou sem atingir um estado final.                         ")
-    print("\n Fita Final: ", ' '.join(fita), '\n')
-    # print("              " + "    " * cabecote + "^ (Cabeçote Final)")
-    print("════════════════════════════════════════════════════════════════════════════════════════")
+        print("║ Resultado:   A execução terminou sem atingir um estado final.                        ║")
+    else:
+        print("║ Resultado:   A execução terminou corretamente em um estado final.                    ║")
+
+    print("╚══════════════════════════════════════════════════════════════════════════════════════╝")
 
 
-def move_cabecote(cabecote, direcao):
-    if direcao.upper() == 'D':
-        cabecote += 1
-    elif direcao.upper() == 'E':
-        cabecote -= 1
-        if cabecote < 0:
-            cabecote = 0  # Não deixa o cabeçote ir antes da posição 0
-    return cabecote

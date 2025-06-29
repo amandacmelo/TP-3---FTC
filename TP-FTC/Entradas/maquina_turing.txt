@@ -1,6 +1,8 @@
 Q: q0 q1 q2 qf
 I: q0
 F: qf
-q0 a -> q1 A D
-q1 p -> q2 D E
-q2 d -> qf D D
+q0 a -> q1 o D
+q1 a -> q1 o D
+q1 p -> q2 s E
+q2 p -> q2 s E
+q2 d -> qf c D

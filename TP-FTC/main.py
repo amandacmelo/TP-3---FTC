@@ -164,7 +164,7 @@ def main():
                 if conteudo:
                     time.sleep(1)
                     limpar_terminal()
-                    executar_maquina_turing(conteudo)
+                    executar_maquina_turing(conteudo, alfabeto, ingredientes)
 
             case '6':
                 sair = True

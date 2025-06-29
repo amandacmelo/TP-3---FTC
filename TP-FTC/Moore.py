@@ -10,6 +10,7 @@ def ler_moore(linhas):
     formato maquina moore
     Q: lista de estados
     I: estado inicial
+    F: estados finais
     O: saidas para cada estado (formato: estado=saida)
     transicoes: estado_origem -> estado_destino | simbolos
     
