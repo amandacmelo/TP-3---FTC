@@ -1,5 +1,9 @@
 import os
 import time
+# Codigos de cores ANSI
+VERMELHO = '\033[91m'
+AMARELO = '\033[93m'
+RESET = '\033[0m'
 
 def limpar_tela():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -70,7 +74,7 @@ def ler_moore(linhas):
 
 
 def imprimeMoore(dicionario_transicoes, saidas_estados, estado_inicial):
-    # Tabela de transições formatada como a Mealy
+
     linhas = []
     linhas.append("\n╔════════════════╦═══════════╦════════════════╦════════════════╗")
     linhas.append("║  Estado Atual  ║  Entrada  ║ Próximo Estado ║     Saída      ║")
@@ -79,17 +83,27 @@ def imprimeMoore(dicionario_transicoes, saidas_estados, estado_inicial):
     for (estado_origem, simbolo), estado_destino in dicionario_transicoes.items():
         if estado_destino != 'erro':
             saida_destino = saidas_estados.get(estado_destino, "N/A")
-            linhas.append(f"║ {estado_origem:^14} ║ {simbolo:^9} ║ {estado_destino:^14} ║ {saida_destino:^14} ║")
+
+            # Define cor por linha
+            if estado_origem == estado_inicial:
+                cor = AMARELO
+            else:
+                cor = RESET
+
+            # Linha colorida completa
+            linhas.append(
+                f"║ {cor}{estado_origem:^14}{RESET} ║ {cor}{simbolo:^9}{RESET} ║ "
+                f"{cor}{estado_destino:^14}{RESET} ║ {cor}{saida_destino:^14}{RESET} ║"
+            )
             linhas.append("╠════════════════╬═══════════╬════════════════╬════════════════╣")
-    
-    # Substituir a última linha de separação pelo rodapé
+
+    # Corrigir última linha
     linhas[-1] = "╚════════════════╩═══════════╩════════════════╩════════════════╝"
 
-    # Imprimir a tabela
     for linha in linhas:
         print(linha)
 
-    # Informações adicionais
+    # Informacoes adicionais
     print("╔══════════════════════════════════════════════════════════════╗")
     print(f"║ Estado Inicial: {estado_inicial:<45}║")
     print("╚══════════════════════════════════════════════════════════════╝")
@@ -154,8 +168,21 @@ def executar_simulador_moore(alfabeto, ingredientes, conteudo_arquivo):
         print("╠════════════╦════════════╦════════════════╦══════════════════════════════════════════════════╣")
         print("║  Origem    ║  Entrada   ║    Destino     ║            Saída                                 ║")
         print("╠════════════╬════════════╬════════════════╬══════════════════════════════════════════════════╣")
-        for origem, simb, destino, saida in historico_transicoes:
-            print(f"║ {origem:^10} ║ {simb:^10} ║ {destino:^14} ║ {saida:^48} ║")
+
+        for i, (origem, simb, destino, saida) in enumerate(historico_transicoes):
+            destino_str = destino if destino is not None else "erro"
+            saida_str = saida if saida is not None else "--"
+
+            # Determina a cor
+            if destino_str == "erro":
+                cor = VERMELHO
+            elif i == len(historico_transicoes) - 1:
+                cor = AMARELO
+            else:
+                cor = RESET
+
+            print(f"║ {cor}{origem:^10}{RESET} ║ {cor}{simb:^10}{RESET} ║ {cor}{destino_str:^14}{RESET} ║ {cor}{saida_str:^48}{RESET} ║")
+
         print("╚════════════╩════════════╩════════════════╩══════════════════════════════════════════════════╝")
 
         ingrediente_simbolo = input("\nInsira um ingrediente (a, p, o, d, c, s): ").strip().lower()
@@ -184,14 +211,27 @@ def executar_simulador_moore(alfabeto, ingredientes, conteudo_arquivo):
         estado_anterior = estado_atual
         historico_transicoes.append((estado_anterior, ingrediente_simbolo, estado_atual, saida_atual))
 
-        # Mostrar histórico em formato de tabela com cabeçalho
+
         print("\n╔═════════════════════════════════════════════════════════════════════════════════════════════╗")
         print("║                                📜 HISTÓRICO DE TRANSIÇÕES                                   ║")
         print("╠════════════╦════════════╦════════════════╦══════════════════════════════════════════════════╣")
-        print("║  Origem    ║  Entrada   ║    Destino     ║                     Saída                        ║")
+        print("║  Origem    ║  Entrada   ║    Destino     ║            Saída                                 ║")
         print("╠════════════╬════════════╬════════════════╬══════════════════════════════════════════════════╣")
-        for origem, simb, destino, saida in historico_transicoes:
-            print(f"║ {origem:^10} ║ {simb:^10} ║ {destino:^14} ║ {saida:^48} ║")
+
+        for i, (origem, simb, destino, saida) in enumerate(historico_transicoes):
+            destino_str = destino if destino is not None else "erro"
+            saida_str = saida if saida is not None else "--"
+
+            # Determina a cor
+            if destino_str == "erro":
+                cor = VERMELHO
+            elif i == len(historico_transicoes) - 1:
+                cor = AMARELO
+            else:
+                cor = RESET
+
+            print(f"║ {cor}{origem:^10}{RESET} ║ {cor}{simb:^10}{RESET} ║ {cor}{destino_str:^14}{RESET} ║ {cor}{saida_str:^48}{RESET} ║")
+
         print("╚════════════╩════════════╩════════════════╩══════════════════════════════════════════════════╝")
 
         resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
@@ -203,7 +243,6 @@ def executar_simulador_moore(alfabeto, ingredientes, conteudo_arquivo):
         
     
     # Verificar resultado final
-    # Resultado final estilizado (sem estado final, estilo Mealy)
     print("\n╔══════════════════════════════════════════════════════════════════════════════════════╗")
     print("║                                 🌟 RESULTADO FINAL 🌟                                ║")
     print("╠══════════════════════════════════════════════════════════════════════════════════════╣")
@@ -213,7 +252,7 @@ def executar_simulador_moore(alfabeto, ingredientes, conteudo_arquivo):
 
     
 
-    # Histórico de saídas
+    # Histórico de saidas
     print("║ Histórico de saídas:                                                                 ║")
     for i, saida in enumerate(historico_saidas):
         if i == 0:

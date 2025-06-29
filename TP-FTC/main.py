@@ -7,6 +7,9 @@ from Moore import executar_simulador_moore
 import os
 import time
 
+ROXO = '\033[95m'
+RESET = '\033[0m'
+
 # Alfabeto geral do sistema (baseado nas iniciais dos ingredientes)
 alfabeto = {'a', 'p', 'o', 'd', 'c', 's', 'e'}
 
@@ -92,11 +95,12 @@ def selecionar_arquivo(arquivo_padrao):
         return None
 
 def mostrar_menu_principal():
-    print('   ° o   \n'
-          ' _ o_° o \n'
-          ' /  \\  ° \n'
-          ' \\__/    Bem-vindo ao Simulador de Poções!\n')
-
+    print(ROXO + 
+      '   ° o   \n'
+      ' _ o_° o \n'
+      ' /  \\  ° \n'
+      ' \\__/    Bem-vindo ao Simulador de Poções!\n' + 
+      RESET)
     print("╔══════════════════════════════╗")
     print("║   MENU OPÇÕES DE AUTÔMATO:   ║")
     print("╠══════════════════════════════╣")
@@ -169,10 +173,10 @@ def main():
             case '6':
                 sair = True
                 print("Saindo do simulador...\n")
-                print('  ° o \n'
+                print(ROXO +'  ° o \n'
                       ' _ o_° o \n'
                       ' /  \\  ° \n'
-                      '/____\\    Até a próxima.... \n')
+                      '/____\\    Até a próxima.... \n' + RESET)
                 break
 
             case _:

@@ -1,5 +1,9 @@
 import os
 import time
+# Codigos de cores ANSI
+VERMELHO = '\033[91m'
+AMARELO = '\033[93m'
+RESET = '\033[0m'
 
 def limpar_tela():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -85,23 +89,34 @@ def classificar_pocao_final(lista_saidas):
 
 
 def imprime_dicionario_mealy(dicionario_transicoes, estado_inicial):
-    """Imprime o dicionário de transições Mealy de forma organizada"""
     linhas = []
     linhas.append("╔════════════════╦═══════════╦════════════════╦════════════════╗")
     linhas.append("║  Estado Atual  ║  Entrada  ║ Próximo Estado ║     Saída      ║")
     linhas.append("╠════════════════╬═══════════╬════════════════╬════════════════╣")
-    
+
     for chave, (destino, saida) in dicionario_transicoes.items():
         estado_atual, entrada = chave
-        linhas.append(f"║ {estado_atual:^14} ║ {entrada:^9} ║ {destino:^14} ║ {saida:^14} ║")
+
+        # Escolhe a cor da linha inteira
+        if estado_atual == estado_inicial:
+            cor = AMARELO
+        else:
+            cor = RESET
+
+        # Linha com cor aplicada a todos os campos
+        linhas.append(
+            f"║ {cor}{estado_atual:^14}{RESET} ║ {cor}{entrada:^9}{RESET} ║ "
+            f"{cor}{destino:^14}{RESET} ║ {cor}{saida:^14}{RESET} ║"
+        )
         linhas.append("╠════════════════╬═══════════╬════════════════╬════════════════╣")
-    
-    # Remove a última linha de separação e adiciona o fechamento
+
+    # Finaliza a tabela corretamente
     linhas[-1] = "╚════════════════╩═══════════╩════════════════╩════════════════╝"
-    
-    # Imprime todas as linhas da tabela
+
+    # Imprime a tabela
     for linha in linhas:
         print(linha)
+
     
     # Informações adicionais
     print("╔══════════════════════════════════════════════════════════════╗")
@@ -147,10 +162,25 @@ def executar_simulador_mealy(alfabeto, ingredientes, conteudo_arquivo):
             print("╠════════════╦════════════╦════════════════╦═════════════════╣")
             print("║  Origem    ║  Entrada   ║   Destino      ║      Saída      ║")
             print("╠════════════╬════════════╬════════════════╬═════════════════╣")
-            for origem, simb, destino, saida in historico_transicoes:
-                nome_ingrediente = ingredientes[simb]['nome']
-                print(f"║ {origem:^10} ║ {simb:^10} ║ {destino:^14} ║ {saida:^15} ║")
+
+            for i, (origem, simb, destino, saida) in enumerate(historico_transicoes):
+                destino_str = destino if destino is not None else "erro"
+
+                # Determinar cor da linha
+                if destino_str == "erro":
+                    cor = VERMELHO
+                elif i == len(historico_transicoes) - 1:
+                    cor = AMARELO
+                else:
+                    cor = RESET
+
+                nome_ingrediente = ingredientes[simb]['nome'] if simb in ingredientes else simb
+                saida_str = saida if saida is not None else "--"
+
+                print(f"║ {cor}{origem:^10}{RESET} ║ {cor}{nome_ingrediente:^10}{RESET} ║ {cor}{destino_str:^14}{RESET} ║ {cor}{saida_str:^15}{RESET} ║")
+
             print("╚════════════╩════════════╩════════════════╩═════════════════╝")
+
 
         ingrediente = input("\nInsira um ingrediente (a, p, o, d, c, s): ").strip().lower()
         if ingrediente not in alfabeto:
@@ -175,11 +205,25 @@ def executar_simulador_mealy(alfabeto, ingredientes, conteudo_arquivo):
         print("╠════════════╦════════════╦════════════════╦═════════════════╣")
         print("║  Origem    ║  Entrada   ║   Destino      ║      Saída      ║")
         print("╠════════════╬════════════╬════════════════╬═════════════════╣")
-        for origem, simb, destino, saida in historico_transicoes:
-            nome_ingrediente = ingredientes[simb]['nome']
-            print(f"║ {origem:^10} ║ {simb:^10} ║ {destino:^14} ║ {saida:^15} ║")
-        print("╚════════════╩════════════╩════════════════╩═════════════════╝")
 
+        for i, (origem, simb, destino, saida) in enumerate(historico_transicoes):
+            destino_str = destino if destino is not None else "erro"
+
+            # Determinar cor da linha
+            if destino_str == "erro":
+                cor = VERMELHO
+
+            elif i == len(historico_transicoes) - 1:
+                cor = AMARELO
+            else:
+                cor = RESET
+
+            nome_ingrediente = ingredientes[simb]['nome'] if simb in ingredientes else simb
+            saida_str = saida if saida is not None else "--"
+
+            print(f"║ {cor}{origem:^10}{RESET} ║ {cor}{nome_ingrediente:^10}{RESET} ║ {cor}{destino_str:^14}{RESET} ║ {cor}{saida_str:^15}{RESET} ║")
+
+        print("╚════════════╩════════════╩════════════════╩═════════════════╝")
             
         resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()
         while resposta not in ('s', 'n'):

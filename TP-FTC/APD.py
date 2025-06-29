@@ -1,5 +1,10 @@
 import os
 import time
+# Codigos de cores ANSI
+VERMELHO = '\033[91m'
+VERDE = '\033[92m'
+AMARELO = '\033[93m'
+RESET = '\033[0m'
 
 def limpar_tela():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -17,7 +22,7 @@ def simbolo_para_nome_reacao(simbolo):
     return mapeamento_reacoes.get(simbolo, simbolo)
 
 
-# Pilha para armazenar as reações (variável global do módulo)
+# Pilha para armazenar as reacoes 
 pilha_reacoes = []
 
 def ler_automato_pilha(linhas):
@@ -46,7 +51,7 @@ def ler_automato_pilha(linhas):
             estados_finais = set(estados_finais_str.split())
         i += 1
 
-    # Transiçoes
+    # Transicoes: atual -> prox | simbolo desempilhar empilhar
     while i < len(linhas):
         linha = linhas[i]
         if '->' in linha:
@@ -76,6 +81,7 @@ def ler_automato_pilha(linhas):
     return estado_inicial, estados_finais, dicionario_transicoes
 
 def imprime_dicionario_apd(dicionario_transicoes, estado_inicial, estados_finais):
+    
     linhas = []
     linhas.append("╔═════════════════╦═══════════╦═══════════════╦═══════════════╦═══════════════╗")
     linhas.append("║  Estado Atual   ║  Símbolo  ║  Desempilha   ║    Empilha    ║ Próximo Estado║")
@@ -84,24 +90,33 @@ def imprime_dicionario_apd(dicionario_transicoes, estado_inicial, estados_finais
     for chave, valor in dicionario_transicoes.items():
         estado_atual, simbolo, desempilha = chave
         novo_estado, empilha = valor
-        if desempilha != '':
-            desempilha = desempilha
+
+        # Substitui vazio por lambda
+        desempilha = desempilha if desempilha else 'λ'
+        empilha = empilha if empilha else 'λ'
+
+        # Aplica cor à linha inteira
+        if estado_atual in estados_finais:
+            cor = VERDE
+        elif estado_atual == estado_inicial:
+            cor = AMARELO
         else:
-            desempilha = 'λ'
-            
-        if empilha != '':
-            empilha = empilha
-        else:
-            empilha = 'λ'
-        if novo_estado !=  'erro':
-            linhas.append(f"║ {estado_atual:^15} ║ {simbolo:^9} ║ {simbolo_para_nome_reacao(desempilha):^13} ║ {simbolo_para_nome_reacao(empilha):^13} ║ {novo_estado:^13} ║")
+            cor = RESET
+
+        if novo_estado != 'erro':
+            linhas.append(
+                f"║ {cor}{estado_atual:^15}{RESET} ║ {cor}{simbolo:^9}{RESET} ║ "
+                f"{cor}{simbolo_para_nome_reacao(desempilha):^13}{RESET} ║ "
+                f"{cor}{simbolo_para_nome_reacao(empilha):^13}{RESET} ║ "
+                f"{cor}{novo_estado:^13}{RESET} ║"
+            )
             linhas.append("╠═════════════════╬═══════════╬═══════════════╬═══════════════╬═══════════════╣")
     
     linhas[-1] = "╚═════════════════╩═══════════╩═══════════════╩═══════════════╩═══════════════╝"
-           
     
     for linha in linhas:
         print(linha)
+
     
     print("╔═════════════════════════════════════════════════════════════════════════════╗") 
     print(f"║ Estado Inicial: {estado_inicial:<60}║")
@@ -117,7 +132,7 @@ def mostrar_pilha(ingredientes):
         print("\n🧪 Reações ativas na poção:")
         print("╔════════════════╗")
         for simbolo in reversed(pilha_reacoes):
-            reacao = simbolo_para_nome_reacao(simbolo)  # Usando sua função original
+            reacao = simbolo_para_nome_reacao(simbolo) 
             print(f"║ {reacao:^14} ║")
         print("╚════════════════╝")
 
@@ -134,7 +149,7 @@ def processar_pilha(simbolo, simbolo_desempilhar, simbolo_empilhar, ingredientes
     
     # Verificar se pode desempilhar
     if simbolo_desempilhar != '':
-        # Desempilhar símbolo específico
+        # Desempilhar simbolo especifico
         if not pilha_reacoes or pilha_reacoes[-1] != simbolo_desempilhar:
             topo_atual = pilha_reacoes[-1] if pilha_reacoes else 'VAZIA'
             print(f"Erro ao desempilhar: esperava '{simbolo_desempilhar}', topo é '{topo_atual}'")
@@ -145,7 +160,7 @@ def processar_pilha(simbolo, simbolo_desempilhar, simbolo_empilhar, ingredientes
             reacao_removida = simbolo_para_nome_reacao(removido)
 
     
-    # Empilhar se necessário
+    # Empilhar se necessario
     if simbolo_empilhar != '':
         pilha_reacoes.append(simbolo_empilhar)
         empilhado = simbolo_para_nome_reacao(simbolo_empilhar)
@@ -160,16 +175,15 @@ def realizar_transicao_apd(estado_atual, simbolo, dicionario):
         topo_pilha = pilha_reacoes[-1]
     else:
         topo_pilha = ''  # Pilha vazia representada por string vazia
-    
-    # Procurar transições possíveis
-    # 1. Transição que desempilha o topo atual (se pilha não está vazia)
+
+    # 1. Transicao que desempilha o topo atual (se pilha nao esta vazia)
     if topo_pilha != '':
         chave_desempilha = (estado_atual, simbolo, topo_pilha)
         if chave_desempilha in dicionario:
             novo_estado, simbolo_empilhar = dicionario[chave_desempilha]
             return novo_estado, topo_pilha, simbolo_empilhar
     
-    # 2. Transição que não desempilha (epsilon) 
+    # 2. Transicao que nao desempilha (epsilon) 
     chave_epsilon = (estado_atual, simbolo, '')
     if chave_epsilon in dicionario:
         novo_estado, simbolo_empilhar = dicionario[chave_epsilon]
@@ -204,9 +218,24 @@ def executar_simulador_pilha(alfabeto, ingredientes, conteudo):
             print("╠═══════════╦══════════╦═══════════╦══════════════╦══════════════╣")
             print("║  Origem   ║ Símbolo  ║  Destino  ║  Desempilha  ║   Empilha    ║")
             print("╠═══════════╬══════════╬═══════════╬══════════════╬══════════════╣")
+
             for i, (origem, simb, destino, desemp, emp) in enumerate(historico_transicoes):
-                print(f"║{origem:^10} ║ {simb:^8} ║ {destino:^9} ║ {simbolo_para_nome_reacao(desemp):^12} ║ {simbolo_para_nome_reacao(emp):^12} ║")
+            
+                # Definindo a cor da linha
+                if destino == "erro":
+                    cor = VERMELHO
+                elif destino in estados_finais:
+                    cor = VERDE
+                elif i == len(historico_transicoes) - 1:
+                    cor = AMARELO
+               
+                else:
+                    cor = RESET
+
+                print(f"║ {cor}{origem:^9}{RESET} ║ {cor}{simb:^8}{RESET} ║ {cor}{destino:^9}{RESET} ║ {cor}{simbolo_para_nome_reacao(desemp):^12}{RESET} ║ {cor}{simbolo_para_nome_reacao(emp):^12}{RESET} ║")
+
             print("╚═══════════╩══════════╩═══════════╩══════════════╩══════════════╝")
+
         
 
         simbolo = input("\nInsira um ingrediente (a, p, o, d, c, s): ").strip().lower()
@@ -217,21 +246,16 @@ def executar_simulador_pilha(alfabeto, ingredientes, conteudo):
 
         novo_estado, simbolo_desempilhar, simbolo_empilhar = realizar_transicao_apd(estado_atual, simbolo, dicionario_transicoes)
 
-        if novo_estado is None:
-            print("⚠️ Transição inválida. Nenhuma regra encontrada.")
-            print(f"   Estado atual: {estado_atual}")
-            print(f"   Ingrediente: {simbolo}")
-            print(f"   Topo da pilha: {pilha_reacoes[-1] if pilha_reacoes else 'VAZIA'}")
-            continue
 
-        # Processar ação na pilha
+        # Processar acao na pilha
         if not processar_pilha(simbolo, simbolo_desempilhar, simbolo_empilhar, ingredientes):
             print("Erro ao processar pilha.")
+            estado_atual = 'erro'
             break
         ingredientes_usados.append(simbolo)
         estado_atual = novo_estado
 
-        # Mostrar histórico de transições
+        # Mostrar historico de transicoes
         if simbolo_desempilhar == '':
             simbolo_desempilhar = 'λ'
             
@@ -246,10 +270,23 @@ def executar_simulador_pilha(alfabeto, ingredientes, conteudo):
         print("╠═══════════╦══════════╦═══════════╦══════════════╦══════════════╣")
         print("║  Origem   ║ Símbolo  ║  Destino  ║  Desempilha  ║   Empilha    ║")
         print("╠═══════════╬══════════╬═══════════╬══════════════╬══════════════╣")
+
         for i, (origem, simb, destino, desemp, emp) in enumerate(historico_transicoes):
-            print(f"║{origem:^10} ║ {simb:^8} ║ {destino:^9} ║ {simbolo_para_nome_reacao(desemp):^12} ║ {simbolo_para_nome_reacao(emp):^12} ║")
+        
+            # Definindo a cor da linha
+            if destino == "erro":
+                cor = VERMELHO
+            elif destino in estados_finais:
+                cor = VERDE
+            elif i == len(historico_transicoes) - 1:
+                cor = AMARELO
+            
+            else:
+                cor = RESET
+
+            print(f"║ {cor}{origem:^9}{RESET} ║ {cor}{simb:^8}{RESET} ║ {cor}{destino:^9}{RESET} ║ {cor}{simbolo_para_nome_reacao(desemp):^12}{RESET} ║ {cor}{simbolo_para_nome_reacao(emp):^12}{RESET} ║")
+
         print("╚═══════════╩══════════╩═══════════╩══════════════╩══════════════╝")
-       
         mostrar_pilha(ingredientes)
        
         resposta = input("\nDeseja inserir mais um ingrediente (s/n)? ").strip().lower()

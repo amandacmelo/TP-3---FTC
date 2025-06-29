@@ -1,5 +1,10 @@
 import os
 import time
+# Codigos de cores ANSI
+VERMELHO = '\033[91m'
+VERDE = '\033[92m'
+AMARELO = '\033[93m'
+RESET = '\033[0m'
 
 def limpar_tela():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -10,11 +15,11 @@ def move_cabecote(cabecote, direcao):
         cabecote += 1
     elif direcao.upper() == 'E':
         cabecote -= 1
-        if cabecote < 1:  # não deixa passar da posição 〈
+        if cabecote < 1:  # não deixa passar da posicao 〈
             cabecote = 1
     return cabecote
 
-# Leitura do arquivo da máquina de Turing
+# Leitura do arquivo da maquina de Turing
 def ler_maquina_turing(linhas):
     estado_inicial = None
     estados_finais = set()
@@ -39,13 +44,13 @@ def ler_maquina_turing(linhas):
             estados_finais = set(estados_finais_str.split())
         i += 1
 
-    # Resto: transições
+    # Resto: atual lido -> prox escrito direcao
     while i < len(linhas):
         linha = linhas[i]
         if '->' in linha:
             partes = linha.split('->')
             chave = tuple(partes[0].strip().split())  # (estado_atual, simbolo_lido)
-            resultado = partes[1].strip().split()     # (novo_estado, simbolo_escrito, direção)
+            resultado = partes[1].strip().split()     # (novo_estado, simbolo_escrito, direcao)
 
             if len(chave) == 2 and len(resultado) == 3:
                 dicionario_transicoes[(chave[0], chave[1])] = (resultado[0], resultado[1], resultado[2])
@@ -60,30 +65,47 @@ def imprime_dicionario(dicionario_transicoes, ingredientes, estado_inicial, esta
     linhas.append("╠══════════════════╬═══════════════════╬════════════════╬══════════════════════╬══════════════╣")
 
     for (estado_atual, simbolo_lido), (novo_estado, simbolo_escrito, direcao) in dicionario_transicoes.items():
-        linhas.append(f"║ {estado_atual:^16} ║ {ingredientes[simbolo_lido]['nome']:^17} ║ {novo_estado:^14} ║ {ingredientes[simbolo_escrito]['nome']:^20} ║ {direcao:^12} ║")
+        # Definir cor da linha
+        if novo_estado in estados_finais:
+            cor = VERDE
+        elif estado_atual == estado_inicial:
+            cor = AMARELO
+        else:
+            cor = RESET
+
+        # Obter nomes legíveis dos ingredientes
+        nome_lido = ingredientes.get(simbolo_lido, {}).get('nome', simbolo_lido)
+        nome_escrito = ingredientes.get(simbolo_escrito, {}).get('nome', simbolo_escrito)
+
+        # Linha colorida
+        linhas.append(
+            f"║ {cor}{estado_atual:^16}{RESET} ║ {cor}{nome_lido:^17}{RESET} ║ "
+            f"{cor}{novo_estado:^14}{RESET} ║ {cor}{nome_escrito:^20}{RESET} ║ {cor}{direcao:^12}{RESET} ║"
+        )
         linhas.append("╠══════════════════╬═══════════════════╬════════════════╬══════════════════════╬══════════════╣")
 
-    # Substitui a última linha pelo rodapé da tabela
-    linhas[-1] ="╚══════════════════╩═══════════════════╩════════════════╩══════════════════════╩══════════════╝"
+    # Substitui a última linha pelo rodapé
+    linhas[-1] = "╚══════════════════╩═══════════════════╩════════════════╩══════════════════════╩══════════════╝"
 
+    # Imprimir todas as linhas
     for linha in linhas:
         print(linha)
+
     print("╔═════════════════════════════════════════════════════════════════════════════════════════════╗") 
     print(f"║ Estado Inicial: {estado_inicial:<76}║")
     print(f"║ Estado(s) Final(is): {', '.join(estados_finais):<71}║")
     print("╚═════════════════════════════════════════════════════════════════════════════════════════════╝")
 
 def exibir_fita(fita, cabecote):
-    RED = '\033[91m'
-    RESET = '\033[0m'
+
 
     print("\n🧪 Fita Completa:")
 
-    # Linha da fita com destaque na posição do cabeçote
+    # Linha da fita com destaque na posicao do cabecote
     visual_fita = ""
     for i, simbolo in enumerate(fita):
         if i == cabecote:
-            visual_fita += f"{RED}{simbolo}{RESET} "  # Cor vermelha
+            visual_fita += f"{VERMELHO}{simbolo}{RESET} "  # Cor vermelha
         else:
             visual_fita += f"{simbolo} "
     print(visual_fita.strip())
@@ -97,7 +119,7 @@ def executar_maquina_turing(conteudo_arquivo, alfabeto, ingredientes):
         return
     estado_atual = estado_inicial
     historico = []
-    imprime_dicionario(dicionario, ingredientes, estado_inicial, estados_finais)  #  Imprime o dicionário no início
+    imprime_dicionario(dicionario, ingredientes, estado_inicial, estados_finais)  #  Imprime o dicionario no inicio
 
     fita = ['〈'] + ['_'] * 50 #〈 ocupa a posição 0
 
@@ -107,24 +129,44 @@ def executar_maquina_turing(conteudo_arquivo, alfabeto, ingredientes):
     while True:
 
         limpar_tela()
-        imprime_dicionario(dicionario, ingredientes, estado_inicial, estados_finais)  #  Imprime o dicionário para auxiliar
+        imprime_dicionario(dicionario, ingredientes, estado_inicial, estados_finais)  #  Imprime o dicionario para auxiliar
         if historico != []:
             print("\n╔═════════════════════════════════════════════════════════════════════════════════════════════╗")
             print("║                               📜 HISTÓRICO DE TRANSIÇÕES                                    ║")
             print("╠══════════════════╦═══════════════════╦════════════════╦══════════════════════╦══════════════╣")
             print("║   Estado Atual   ║   Símbolo Lido    ║   Novo Estado  ║   Símbolo Escrito    ║   Direção    ║")
             print("╠══════════════════╬═══════════════════╬════════════════╬══════════════════════╬══════════════╣")
-            for atual, lido, proximo, escrito, direcao in historico:
-                print(f"║ {atual:^16} ║ {ingredientes[lido]['nome']:^17} ║ {proximo:^14} ║ {ingredientes[lido]['nome']:^20} ║ {direcao:^12} ║")
+
+            for i, (atual, lido, proximo, escrito, direcao) in enumerate(historico):
+                proximo_str = proximo if proximo is not None else "erro"
+
+                # Escolher cor de acordo com o estado
+                if proximo_str == "erro":
+                    cor = VERMELHO
+                elif proximo_str in estados_finais:
+                    cor = VERDE
+                elif i == len(historico) - 1:
+                    cor = AMARELO
+                else:
+                    cor = RESET
+
+                # Nome do ingrediente (proteção caso o símbolo não esteja no dicionario)
+                nome_lido = ingredientes[lido]['nome'] if lido in ingredientes else lido
+                nome_escrito = ingredientes[escrito]['nome'] if escrito in ingredientes else escrito
+
+                print(f"║ {cor}{atual:^16}{RESET} ║ {cor}{nome_lido:^17}{RESET} ║ {cor}{proximo_str:^14}{RESET} ║ {cor}{nome_escrito:^20}{RESET} ║ {cor}{direcao:^12}{RESET} ║")
+
             print("╚══════════════════╩═══════════════════╩════════════════╩══════════════════════╩══════════════╝")
+
             exibir_fita(fita, cabecote)
         simbolo_lido = input("Insira um ingrediente (a, p, o, d, c, s): ").strip().lower()
 
         if simbolo_lido not in alfabeto:
             print(" Ingrediente inválido! Insira apenas (a, p, o, d, c, s).\n")
+            time.sleep(1)
             continue
         
-        # Realiza uma transiçao
+        # Realiza uma transicao
         chave = (estado_atual, simbolo_lido)
 
         if chave in dicionario:
@@ -138,13 +180,32 @@ def executar_maquina_turing(conteudo_arquivo, alfabeto, ingredientes):
             print("╠══════════════════╦═══════════════════╦════════════════╦══════════════════════╦══════════════╣")
             print("║   Estado Atual   ║   Símbolo Lido    ║   Novo Estado  ║   Símbolo Escrito    ║   Direção    ║")
             print("╠══════════════════╬═══════════════════╬════════════════╬══════════════════════╬══════════════╣")
-            for atual, lido, proximo, escrito, direcao in historico:
-                print(f"║ {atual:^16} ║ {ingredientes[lido]['nome']:^17} ║ {proximo:^14} ║ {ingredientes[lido]['nome']:^20} ║ {direcao:^12} ║")
+
+            for i, (atual, lido, proximo, escrito, direcao) in enumerate(historico):
+                proximo_str = proximo if proximo is not None else "erro"
+
+                # Escolher cor de acordo com o estado
+                if proximo_str == "erro":
+                    cor = VERMELHO
+                elif proximo_str in estados_finais:
+                    cor = VERDE
+                elif i == len(historico) - 1:
+                    cor = AMARELO
+                else:
+                    cor = RESET
+
+                # Nome do ingrediente (proteção caso o simbolo nao esteja no dicionario)
+                nome_lido = ingredientes[lido]['nome'] if lido in ingredientes else lido
+                nome_escrito = ingredientes[escrito]['nome'] if escrito in ingredientes else escrito
+
+                print(f"║ {cor}{atual:^16}{RESET} ║ {cor}{nome_lido:^17}{RESET} ║ {cor}{proximo_str:^14}{RESET} ║ {cor}{nome_escrito:^20}{RESET} ║ {cor}{direcao:^12}{RESET} ║")
+
             print("╚══════════════════╩═══════════════════╩════════════════╩══════════════════════╩══════════════╝")
+
             exibir_fita(fita, cabecote)
         else:
             print(f"⚠️ Atenção: Transição inexistente para ({estado_atual}, '{simbolo_lido}'). Cabeçote permanece.")
-            estado_erro = True  # Marca que houve transição inválida
+            estado_erro = True  # Marca que houve transicao invalida
 
 
 
